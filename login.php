@@ -17,7 +17,7 @@ $hashpass = $row['password'] ?? '';
 if(is_array($row)){
     if($row['status']==='active'){
     if(password_verify($password, $hashpass)){
-        $_SESSION['username'] = $row['email'];
+        $_SESSION['username'] = $row['email'];`
         $_SESSION['role'] = $row['role'] ?? 'user';
         $_SESSION['user_id'] = $row['id']; // Store user_id in session
         
