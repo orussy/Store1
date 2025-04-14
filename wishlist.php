@@ -1,6 +1,7 @@
 <?php
 // Start session to access user authentication data
 session_start();
+require_once 'config/db.php';
 
 // Prevent PHP errors from being displayed in the output
 error_reporting(0);
@@ -17,13 +18,6 @@ if (!isset($_SESSION['user_id'])) {
 
 // Get the authenticated user's ID
 $authenticated_user_id = $_SESSION['user_id'];
-
-// Database connection
-$connect = new mysqli('localhost', 'root', '', 'store');
-if ($connect->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Connection failed: ' . $connect->connect_error]);
-    exit();
-}
 
 // Get user ID from request
 $user_id = null;
@@ -54,7 +48,7 @@ if ($user_id != $authenticated_user_id) {
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         // Get wishlist items
-        $stmt = $connect->prepare("
+        $stmt = $conn->prepare("
             SELECT w.id, p.id as product_id, p.name, ps.price, p.cover
             FROM whishlist w 
             JOIN products p ON w.product_id = p.id 
@@ -62,7 +56,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
             WHERE w.user_id = ? AND w.deleted_at IS NULL
         ");
         if (!$stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $connect->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
             exit();
         }
         
@@ -95,12 +89,12 @@ switch ($_SERVER['REQUEST_METHOD']) {
         }
 
         // Check if item already exists in wishlist
-        $check_stmt = $connect->prepare("
+        $check_stmt = $conn->prepare("
             SELECT id FROM whishlist 
             WHERE user_id = ? AND product_id = ? AND deleted_at IS NULL
         ");
         if (!$check_stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $connect->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
             exit();
         }
         
@@ -114,12 +108,12 @@ switch ($_SERVER['REQUEST_METHOD']) {
         }
 
         // Add new item
-        $stmt = $connect->prepare("
+        $stmt = $conn->prepare("
             INSERT INTO whishlist (user_id, product_id, created_at) 
             VALUES (?, ?, NOW())
         ");
         if (!$stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $connect->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
             exit();
         }
         
@@ -143,13 +137,13 @@ switch ($_SERVER['REQUEST_METHOD']) {
         }
 
         // Soft delete by setting deleted_at
-        $stmt = $connect->prepare("
+        $stmt = $conn->prepare("
             UPDATE whishlist 
             SET deleted_at = NOW() 
             WHERE id = ? AND user_id = ?
         ");
         if (!$stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $connect->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
             exit();
         }
         
@@ -167,5 +161,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 }
 
-$connect->close();
+// Close the database connection
+$conn->close();
 ?> 

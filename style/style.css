@@ -501,22 +501,16 @@ img {vertical-align: middle;
   font-size: 13px;
 }
 
-.wishlist-item-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.wishlist-icon {
-  background: none;
-  border: none;
+.wishlist-item-details .price {
   color: #ff4444;
-  cursor: pointer;
-  padding: 5px;
-  transition: transform 0.3s;
+  font-weight: bold;
+  margin: 5px 0;
 }
 
-.wishlist-icon:hover {
-  transform: scale(1.2);
+.wishlist-item-details .product-id {
+  color: #666;
+  font-size: 12px;
+  margin: 5px 0;
 }
 
 .remove-wishlist {
@@ -948,4 +942,131 @@ transform: translateY(0);
     .navbar .right {
         margin-top: 10px;
     }
+}
+
+/* Notifications dropdown styles */
+.notifications-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: white;
+  min-width: 300px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 1000;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notifications-dropdown.show {
+  display: block;
+}
+
+.notifications-header {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notifications-header h3 i {
+  color: #0d3b5e;
+}
+
+.empty-notifications {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  gap: 10px;
+  position: relative;
+}
+
+.notification-item.unread::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #ff4444;
+  border-radius: 50%;
+}
+
+.notification-item.unread {
+  padding-left: 25px;
+  background-color: #f8f9fa;
+}
+
+.notification-item-details {
+  flex: 1;
+  padding-right: 10px;
+}
+
+.notification-item-details h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.notification-item-details p {
+  margin: 5px 0 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.notification-item-details .timestamp {
+  color: #999;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+/* Notification badge styles */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Position the bell icon for badge */
+.nav-icon[alt="Security"] {
+  position: relative;
+}
+.footer{
+  background-color: #0d3b5e;
+  color: white;
+  padding: 20px;
+}
+.footer-content{
+  text-align: center;
+  justify-content: center;
+  display: flex;
+  
 }

@@ -21,7 +21,7 @@
         </div>
         <div class="right">
             <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
-            <img src="img/bell-solid.svg" alt="Security" class="nav-icon">
+            <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
             <a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
             
             <!-- Wishlist dropdown -->
@@ -30,6 +30,16 @@
                     <h3><i class="fa-solid fa-heart"></i><a href=""> My Wishlist</a></h3>
                 </div>
                 <div id="wishlistItems"></div>
+            </div>
+
+            <!-- Notifications dropdown -->
+            <div class="notifications-dropdown" id="notificationsDropdown">
+                <div class="notifications-header">
+                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                </div>
+                <div id="notificationsItems">
+                    <!-- Notifications will be dynamically inserted here -->
+                </div>
             </div>
             
             <!-- Login/User section -->
@@ -75,12 +85,20 @@
     </div>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-container">
-            <div class="loading-spinner"></div>
+            
             <div class="loading-text">Loading products...</div>
         </div>
                     </div>
-    
+    <footer class="footer">
+        <div class="footer-content"></div>
+            <div class="footer-section">
+                <h3>About Us</h3>
+                <p>Welcome to our online store. We offer a wide range of products for your home and office.</p>
+            </div>
+            <div class="footer-section">
+        
 
     <script src="js/js.js"></script>
+    <script src="js/notifications.js"></script>
 </body>
 </html>

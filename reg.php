@@ -1,10 +1,7 @@
 <?php
 
 session_start();
-$connect = new mysqli('localhost', 'root', '', 'store'); 
-if ($connect->connect_error) {
-    die("Connection failed: " . $connect->connect_error);
-}
+require_once 'config/db.php';
 
 // Enable detailed error reporting
 error_reporting(E_ALL);
@@ -27,26 +24,52 @@ if (!file_exists($folderName)) {
     copy("uploads/avatar.png", $folderName . "/avatar.png");
 }
 $avatar = $folderName . "/avatar.png";
-$query = "INSERT INTO users (`avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `gender`)
-VALUES ('$avatar', '$f_name', '$l_name', '$email', '$hashpass', '$birthdate', '$phone_no', '$gender')";
 
 try {
-    if (!mysqli_query($connect, $query)) {
-        throw new Exception("MySQL Error: " . mysqli_error($connect));
+    // Start transaction
+    $conn->begin_transaction();
+
+    // Insert user data with prepared statement
+    $query = "INSERT INTO users (`avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `gender`) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssssssss", $avatar, $f_name, $l_name, $email, $hashpass, $birthdate, $phone_no, $gender);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Error inserting user: " . $stmt->error);
     }
-    $query1 = "SELECT id FROM users WHERE email='$email'";
-    $result = mysqli_query($connect, $query1);
-    if (!$result) {
-        throw new Exception("MySQL Error: " . mysqli_error($connect));
+    
+    // Get the user ID
+    $user_id = $conn->insert_id;
+    
+    // Create cart for user with prepared statement
+    $query2 = "INSERT INTO cart(`user_id`) VALUES(?)";
+    $stmt2 = $conn->prepare($query2);
+    $stmt2->bind_param("i", $user_id);
+    
+    if (!$stmt2->execute()) {
+        throw new Exception("Error creating cart: " . $stmt2->error);
     }
-    $row = mysqli_fetch_assoc($result);
-    $user_id = $row['id'];
-    $query2 = "INSERT INTO cart(`user_id`) VALUES('$user_id')";
-    if (!mysqli_query($connect, $query2)) {
-        throw new Exception("MySQL Error: " . mysqli_error($connect));
-    }
-    echo json_encode(["status" => "success", "message" => "User registered successfully"]);
+    
+    // Commit transaction
+    $conn->commit();
+    
+    echo json_encode([
+        "status" => "success", 
+        "message" => "User registered successfully"
+    ]);
+
 } catch (Exception $e) {
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+    // Rollback transaction on error
+    $conn->rollback();
+    echo json_encode([
+        "status" => "error", 
+        "message" => $e->getMessage()
+    ]);
+} finally {
+    // Close statements and connection
+    if (isset($stmt)) $stmt->close();
+    if (isset($stmt2)) $stmt2->close();
+    $conn->close();
 }
 ?>

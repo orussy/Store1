@@ -42,7 +42,7 @@ async function checkLoginStatus() {
         if (response.ok) {
             const data = await response.json();
             if (data.username) {
-                window.location.href = 'dashboard.php';
+                window.location.href = 'dashboard.html';
             }
         }
     } catch (error) {

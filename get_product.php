@@ -1,24 +1,28 @@
 <?php
 session_start();
-$connect = new mysqli('localhost', 'root', '', 'store');
-if ($connect->connect_error) {
-    die("Connection failed: " . $connect->connect_error);
-}
+require_once 'config/db.php';
+
 header("Content-Type: application/json");
 
-// Fixed SQL query
+// Fixed SQL query with prepared statement
 $query = "SELECT * 
           FROM products 
           LEFT JOIN product_skus ON products.id = product_skus.product_id";
 
-$res = mysqli_query($connect, $query);
+$stmt = $conn->prepare($query);
+if (!$stmt) {
+    die(json_encode(['error' => $conn->error]));
+}
 
-if (!$res) {
-    die(json_encode(['error' => mysqli_error($connect)]));
+$stmt->execute();
+$result = $stmt->get_result();
+
+if (!$result) {
+    die(json_encode(['error' => $conn->error]));
 }
 
 $products = array();
-while ($row = mysqli_fetch_assoc($res)) { // Changed to fetch_assoc
+while ($row = $result->fetch_assoc()) {
     $products[] = $row;
 }
 
@@ -28,5 +32,6 @@ error_log('Products array: ' . print_r($products, true));
 // Ensure we're sending a valid JSON array
 echo json_encode(array_values($products));
 
-$connect->close();
+$stmt->close();
+$conn->close();
 ?> 

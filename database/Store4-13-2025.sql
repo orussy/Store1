@@ -157,15 +157,19 @@ CREATE TABLE `loyalty_transactions` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `notification`
+-- Table structure for table `notifications`
 --
 
-CREATE TABLE `notification` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) NOT NULL,
   `title` varchar(255) NOT NULL,
   `content` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `status` enum('unread','read') NOT NULL DEFAULT 'unread',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -500,9 +504,9 @@ ALTER TABLE `loyalty_transactions`
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indexes for table `notification`
+-- Indexes for table `notifications`
 --
-ALTER TABLE `notification`
+ALTER TABLE `notifications`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
@@ -609,9 +613,9 @@ ALTER TABLE `loyalty_transactions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `notification`
+-- AUTO_INCREMENT for table `notifications`
 --
-ALTER TABLE `notification`
+ALTER TABLE `notifications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -699,10 +703,10 @@ ALTER TABLE `loyalty_transactions`
   ADD CONSTRAINT `loyalty_transactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Constraints for table `notification`
+-- Constraints for table `notifications`
 --
-ALTER TABLE `notification`
-  ADD CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `order_details`

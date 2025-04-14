@@ -1,0 +1,173 @@
+[14-Apr-2025 13:08:00 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:00 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:00 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:00 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:00 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:01 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:01 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:01 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:01 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:01 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:26 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:26 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:26 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:26 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:26 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:26 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:26 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:26 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:26 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:27 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:30 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:30 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:30 Europe/Berlin] Request Method: POST
+[14-Apr-2025 13:08:30 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Raw input: {"product_id":6,"user_id":3}
+[14-Apr-2025 13:08:30 Europe/Berlin] Decoded data: Array
+(
+    [product_id] => 6
+    [user_id] => 3
+)
+
+[14-Apr-2025 13:08:30 Europe/Berlin] Non-GET request - User ID from request: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Attempting to add product ID: 6 for user ID: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Successfully added item to wishlist. User: 3, Product: 6
+[14-Apr-2025 13:08:30 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:30 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:30 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:31 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:31 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:31 Europe/Berlin] Request Method: POST
+[14-Apr-2025 13:08:31 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] Raw input: {"product_id":6,"user_id":3}
+[14-Apr-2025 13:08:31 Europe/Berlin] Decoded data: Array
+(
+    [product_id] => 6
+    [user_id] => 3
+)
+
+[14-Apr-2025 13:08:31 Europe/Berlin] Non-GET request - User ID from request: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] Attempting to add product ID: 6 for user ID: 3
+[14-Apr-2025 13:08:31 Europe/Berlin] Item already exists in wishlist for user 3 and product 6
+[14-Apr-2025 13:08:32 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:32 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:32 Europe/Berlin] Request Method: POST
+[14-Apr-2025 13:08:32 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] Raw input: {"product_id":6,"user_id":3}
+[14-Apr-2025 13:08:32 Europe/Berlin] Decoded data: Array
+(
+    [product_id] => 6
+    [user_id] => 3
+)
+
+[14-Apr-2025 13:08:32 Europe/Berlin] Non-GET request - User ID from request: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] Attempting to add product ID: 6 for user ID: 3
+[14-Apr-2025 13:08:32 Europe/Berlin] Item already exists in wishlist for user 3 and product 6
+[14-Apr-2025 13:08:33 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:33 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:33 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:33 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:33 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:36 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:08:36 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:08:36 Europe/Berlin] Request Method: POST
+[14-Apr-2025 13:08:36 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] Raw input: {"product_id":2,"user_id":3}
+[14-Apr-2025 13:08:36 Europe/Berlin] Decoded data: Array
+(
+    [product_id] => 2
+    [user_id] => 3
+)
+
+[14-Apr-2025 13:08:36 Europe/Berlin] Non-GET request - User ID from request: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] Attempting to add product ID: 2 for user ID: 3
+[14-Apr-2025 13:08:36 Europe/Berlin] Item already exists in wishlist for user 3 and product 2
+[14-Apr-2025 13:09:05 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:09:06 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:06 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:06 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:09:06 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:09:07 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:09:07 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:07 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:07 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:09:07 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:09:10 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:09:10 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:10 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:10 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:09:10 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:09:11 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:09:11 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:11 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:11 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:09:11 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:09:13 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:09:13 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:09:13 Europe/Berlin] Request Method: POST
+[14-Apr-2025 13:09:13 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] Raw input: {"product_id":2,"user_id":3}
+[14-Apr-2025 13:09:13 Europe/Berlin] Decoded data: Array
+(
+    [product_id] => 2
+    [user_id] => 3
+)
+
+[14-Apr-2025 13:09:13 Europe/Berlin] Non-GET request - User ID from request: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] Attempting to add product ID: 2 for user ID: 3
+[14-Apr-2025 13:09:13 Europe/Berlin] Item already exists in wishlist for user 3 and product 2
+[14-Apr-2025 13:09:15 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:09:15 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:09:15 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:09:15 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:09:15 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:11:42 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:11:42 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:11:42 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:11:42 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:11:42 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:11:46 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:11:46 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
+[14-Apr-2025 13:11:46 Europe/Berlin] Request Method: POST
+[14-Apr-2025 13:11:46 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] Raw input: {"product_id":2,"user_id":3}
+[14-Apr-2025 13:11:46 Europe/Berlin] Decoded data: Array
+(
+    [product_id] => 2
+    [user_id] => 3
+)
+
+[14-Apr-2025 13:11:46 Europe/Berlin] Non-GET request - User ID from request: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] Attempting to add product ID: 2 for user ID: 3
+[14-Apr-2025 13:11:46 Europe/Berlin] Item already exists in wishlist for user 3 and product 2
+[14-Apr-2025 13:11:47 Europe/Berlin] Request Method: GET
+[14-Apr-2025 13:11:47 Europe/Berlin] Session user_id: 3
+[14-Apr-2025 13:11:47 Europe/Berlin] Authenticated user ID: 3
+[14-Apr-2025 13:11:47 Europe/Berlin] GET request - User ID from request: 3
+[14-Apr-2025 13:11:47 Europe/Berlin] Database error in select statement: Unknown column 'p.price' in 'field list'
