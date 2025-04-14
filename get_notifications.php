@@ -18,11 +18,11 @@ try {
     // Get user ID from session
     $userId = $_SESSION['user_id'];
     
-    // Prepare SQL query to get notifications
+    // Prepare SQL query to get both user-specific and global notifications
     $stmt = $conn->prepare("
         SELECT id, title, content, created_at, status 
         FROM notification 
-        WHERE user_id = ? 
+        WHERE user_id = ? OR user_id IS NULL 
         ORDER BY created_at DESC 
         LIMIT 20
     ");
