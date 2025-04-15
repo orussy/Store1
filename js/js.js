@@ -410,9 +410,8 @@ let slideIndex = 0;
                                     <p class="price">$${item.price}</p>
                                 </div>
                                 <div class="wishlist-item-actions">
-                                    <button class="wishlist-icon">
-                                        <i class="fa-solid fa-heart"></i>
-                                    </button>
+                                    
+                                    
                                     <button onclick="removeFromWishlist(${item.id})" class="remove-wishlist">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
