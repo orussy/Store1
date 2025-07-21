@@ -6,6 +6,17 @@
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <title>Product Cards</title>
+    <style>
+        .cart-header a{
+           text-decoration: none;
+           color: black;
+           transition: 0.3s;
+           
+        }
+        .cart-header a:hover{
+            color: #3d3c3c;
+        }
+    </style>
 
 </head>
 <body>
@@ -22,12 +33,21 @@
         <div class="right">
             <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
             <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
+            <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
             <a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
             
+            <!-- Cart dropdown -->
+            <div class="cart-dropdown" id="cartDropdown">
+                <div class="cart-header">
+                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.html">Shopping Cart</a></h3>
+                </div>
+                <div id="cartItems"></div>
+            </div>
+
             <!-- Wishlist dropdown -->
             <div class="wishlist-dropdown" id="wishlistDropdown">
                 <div class="wishlist-header">
-                    <h3><i class="fa-solid fa-heart"></i><a href=""> My Wishlist</a></h3>
+                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.html"> My Wishlist</a></h3>
                 </div>
                 <div id="wishlistItems"></div>
             </div>
@@ -100,5 +120,6 @@
 
     <script src="js/js.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/cart.js"></script>
 </body>
 </html>

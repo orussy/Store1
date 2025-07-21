@@ -1,3 +1,13 @@
+<?php
+session_start();
+include '../config/db.php';
+
+// Check if user is logged in and is admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ../dashboard.html');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +16,12 @@
     <title>Document</title>
 </head>
 <body>
-    Hello admin
+    <?php
+    $sql = "SELECT * FROM users";
+    $result = mysqli_query($conn, $sql);
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo $row['email']." ".$row['f_name']." ".$row['l_name']." " .$row['password']." <br>";
+    }
+    ?>
 </body>
 </html>

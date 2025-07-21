@@ -112,6 +112,15 @@ let slideIndex = 0;
                         <button onclick="addToWishlist(${product.product_id})" class="wishlist-btn">
                             <i class="fa-solid fa-heart"></i>
                         </button>
+                        <button onclick="addToCart({
+                            id: '${product.product_id}',
+                            name: '${product.name}',
+                            price: ${parseFloat(product.price)},
+                            image: '${product.cover}'
+                        })" class="add-to-cart" ${product.quantity <= 0 ? 'disabled' : ''}>
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            ${product.quantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                        </button>
                         <div id="toast" class="toast-message"></div>
                     </div>
                 `;

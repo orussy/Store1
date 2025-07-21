@@ -65,7 +65,7 @@ try {
 
     $email = $jwt_payload['email'] ?? '';
     $name = $jwt_payload['name'] ?? '';
-    $google_id = $jwt_payload['sub'] ?? '';
+    $google_id = trim($jwt_payload['sub'] ?? '');
     $phone_no = $jwt_payload['phone_number'] ?? '';
 
     $name_parts = explode(' ', $name);
@@ -79,83 +79,70 @@ try {
     // Log the incoming data
     error_log("Attempting to create user - Email: $email, Name: $name");
 
-    // Check if user exists
+    // 1. Check if user exists by email
     $checkStmt = $connect->prepare("SELECT * FROM users WHERE email = ?");
     if (!$checkStmt) {
         throw new Exception("Check prepare failed: " . $connect->error);
     }
-    
     $checkStmt->bind_param("s", $email);
     $checkStmt->execute();
     $result = $checkStmt->get_result();
+    error_log('Email to check: ' . $email);
+    error_log('Rows found: ' . $result->num_rows);
 
     if ($result->num_rows > 0) {
-        // User exists
+        // User exists: LOG IN, do not insert
         $user = $result->fetch_assoc();
-        $_SESSION['username'] = $email;
+        $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
-        
-        // Update including the Google profile picture URL
-        $updateStmt = $connect->prepare("UPDATE users SET f_name = ?, l_name = ?, avatar = ? WHERE email = ?");
+        // Optionally update profile info and Google_ID
+        $updateStmt = $connect->prepare("UPDATE users SET f_name = ?, l_name = ?, avatar = ?, Google_ID = ? WHERE email = ?");
         if ($updateStmt) {
-            $updateStmt->bind_param("ssss", $f_name, $l_name, $file_path, $email);
+            $updateStmt->bind_param("sssss", $f_name, $l_name, $file_path, $google_id, $email);
             $updateStmt->execute();
         }
-        
+        // Determine redirect based on user role
+        $redirect = ($user['role'] === 'admin') ? 'admin/admindashboard.php' : 'dashboard.html';
         echo json_encode([
-            "avatar" => $file_path,  // Local path to the image
-            "google_id" => $google_id,
             "status" => "success",
-            "email" => $email,
+            "id" => $user['id'],
+            "email" => $user['email'],
             "role" => $user['role'],
             "f_name" => $user['f_name'],
             "l_name" => $user['l_name'],
-            "phone_no" => $user['phone_no'],
-            "birthdate" => $user['birthdate'],
-            "gender" => $user['gender'],
-            "id" => $user['id']
+            "avatar" => $user['avatar'],
+            "google_id" => $user['Google_ID'],
+            "redirect" => $redirect,
+            "message" => "Logged in with Google account"
         ]);
     } else {
-        // Create new user
+        // 2. If not, create new user
         $role = 'user';
-        
-        // Keep id and fix the SQL statement
-        $sql = "INSERT INTO users (id, email, avatar, role, f_name, l_name) VALUES (?, ?, ?, ?, ?, ?)";
-        error_log("SQL Query: " . $sql);
-        error_log("Google ID: " . $google_id);
-        error_log("Picture URL: " . $file_path);
-        
+        $sql = "INSERT INTO users (Google_ID, email, avatar, role, f_name, l_name) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $connect->prepare($sql);
         if (!$stmt) {
             throw new Exception("Insert prepare failed: " . $connect->error);
         }
-        
-        // Fix the trailing comma and match parameters exactly
-        $stmt->bind_param("ssssss", 
-            $google_id,    // Keep the Google ID as id
-            $email,
-            $file_path,  // Store local path instead of URL
-            $role, 
-            $f_name, 
-            $l_name       // Remove trailing comma
-        );
-        
+        $stmt->bind_param("ssssss", $google_id, $email, $file_path, $role, $f_name, $l_name);
         if (!$stmt->execute()) {
             throw new Exception("Insert execute failed: " . $stmt->error);
         }
-        
-        $_SESSION['username'] = $email;
+        $new_user_id = $stmt->insert_id;
+        $_SESSION['user_id'] = $new_user_id;
         $_SESSION['role'] = $role;
-        
+        // New users are always redirected to user dashboard
+        $redirect = 'dashboard.html';
         echo json_encode([
             "status" => "success",
+            "id" => $new_user_id,
             "email" => $email,
             "role" => $role,
             "f_name" => $f_name,
             "l_name" => $l_name,
             "avatar" => $file_path,
-            "id" => $google_id,
-            "message" => "Please complete your profile with additional information"
+            "google_id" => $google_id,
+            "redirect" => $redirect,
+            "message" => "Registered new Google user"
         ]);
     }
 } catch (Exception $e) {
