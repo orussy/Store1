@@ -104,7 +104,7 @@ let slideIndex = 0;
                              class="product-image">
                     </div>
                     <a href="#" class="product-name"><h3 class="product-name">${product.name}</h3></a>
-                    <p class="product-price">${product.price} EGP</p>
+                    <p class="product-price">${product.price} ${product.Currancy}</p>
                     <p class="product-description">${product.description}</p>
                     <p class="product-quantity">${quantityText}</p>
 

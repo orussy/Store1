@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 14, 2025 at 01:20 PM
+-- Generation Time: Jul 30, 2025 at 12:55 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `addresses`
 --
-DROP TABLE IF EXISTS `addresses`;
+
 CREATE TABLE `addresses` (
   `id` int(11) NOT NULL,
   `user_id` bigint(20) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE `addresses` (
 CREATE TABLE `cart` (
   `id` int(11) NOT NULL,
   `user_id` bigint(20) NOT NULL,
-  `total` int(11) NOT NULL,
+  `total` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -59,8 +59,7 @@ CREATE TABLE `cart` (
 --
 
 INSERT INTO `cart` (`id`, `user_id`, `total`, `created_at`, `updated_at`) VALUES
-(2, 2147483648, 0, '2025-04-13 10:18:06', NULL),
-(3, 2147483649, 0, '2025-04-13 10:39:43', NULL);
+(6, 2, 0.10, '2025-07-30 10:27:57', '2025-07-30 10:33:04');
 
 -- --------------------------------------------------------
 
@@ -76,6 +75,26 @@ CREATE TABLE `cart_item` (
   `quantity` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cart_item`
+--
+
+INSERT INTO `cart_item` (`id`, `cart_id`, `product_id`, `product_sku_id`, `quantity`, `created_at`, `updated_at`) VALUES
+(2, 6, 1, 66, 1, '2025-07-30 10:33:04', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cart_promocodes`
+--
+
+CREATE TABLE `cart_promocodes` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `cart_id` int(11) NOT NULL,
+  `promocode_id` int(11) NOT NULL,
+  `applied_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -137,6 +156,23 @@ INSERT INTO `categories` (`id`, `name`, `description`, `created_at`, `deleted_at
 (138, 'Home Security & Surveillance', '', '2025-03-24 10:00:31', NULL),
 (139, 'Air Quality & Purifiers', '', '2025-03-24 10:00:31', NULL),
 (140, 'Solar & Renewable Energy', '', '2025-03-24 10:00:31', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `discounts`
+--
+
+CREATE TABLE `discounts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `discount_type` varchar(20) NOT NULL CHECK (`discount_type` in ('percentage','fixed')),
+  `discount_value` decimal(10,2) NOT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -328,7 +364,8 @@ CREATE TABLE `product_skus` (
   `size_attribute_id` int(11) NOT NULL,
   `color_attribute_id` int(11) NOT NULL,
   `sku` varchar(255) NOT NULL,
-  `price` varchar(255) NOT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `Currancy` varchar(3) NOT NULL DEFAULT 'EGP',
   `quantity` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
@@ -338,18 +375,39 @@ CREATE TABLE `product_skus` (
 -- Dumping data for table `product_skus`
 --
 
-INSERT INTO `product_skus` (`id`, `product_id`, `size_attribute_id`, `color_attribute_id`, `sku`, `price`, `quantity`, `created_at`, `deleted_at`) VALUES
-(66, 1, 2, 6, 'WH-MEDIUM-WHITE', '0.1', 30, '2025-03-26 08:16:32', NULL),
-(68, 2, 1, 6, 'IE-SMALL-WHITE', '59.99', 80, '2025-03-26 08:16:32', NULL),
-(70, 3, 2, 6, 'FS-WHITE', '999.99', 15, '2025-03-26 08:16:32', NULL),
-(72, 4, 3, 9, 'MR-GOLD', '499.99', 30, '2025-03-26 08:16:32', NULL),
-(73, 5, 4, 4, 'GL-XL', '1499.99', 10, '2025-03-26 08:16:32', NULL),
-(74, 6, 3, 4, 'UL-LARGE', '1199.99', 15, '2025-03-26 08:16:32', NULL),
-(76, 7, 1, 8, 'FW-BLUE', '299.99', 50, '2025-03-26 08:16:32', NULL),
-(77, 8, 2, 9, 'LW-GOLD', '499.99', 30, '2025-03-26 08:16:32', NULL),
-(79, 9, 3, 7, 'BS-RED', '99.99', 60, '2025-03-26 08:16:32', NULL),
-(80, 10, 4, 5, 'HT-BLACK', '799.99', 20, '2025-03-26 08:16:32', NULL),
-(81, 11, 3, 8, 'FW-BLUE', '102221', 123, '2025-03-26 08:26:50', NULL);
+INSERT INTO `product_skus` (`id`, `product_id`, `size_attribute_id`, `color_attribute_id`, `sku`, `price`, `Currancy`, `quantity`, `created_at`, `deleted_at`) VALUES
+(66, 1, 2, 6, 'WH-MEDIUM-WHITE', 0.10, 'EGP', 30, '2025-03-26 08:16:32', NULL),
+(68, 2, 1, 6, 'IE-SMALL-WHITE', 59.99, 'EGP', 80, '2025-03-26 08:16:32', NULL),
+(70, 3, 2, 6, 'FS-WHITE', 999.99, 'EGP', 15, '2025-03-26 08:16:32', NULL),
+(72, 4, 3, 9, 'MR-GOLD', 499.99, 'EGP', 30, '2025-03-26 08:16:32', NULL),
+(73, 5, 4, 4, 'GL-XL', 1499.99, 'EGP', 10, '2025-03-26 08:16:32', NULL),
+(74, 6, 3, 4, 'UL-LARGE', 1199.99, 'EGP', 15, '2025-03-26 08:16:32', NULL),
+(76, 7, 1, 8, 'FW-BLUE', 299.99, 'EGP', 50, '2025-03-26 08:16:32', NULL),
+(77, 8, 2, 9, 'LW-GOLD', 499.99, 'EGP', 30, '2025-03-26 08:16:32', NULL),
+(79, 9, 3, 7, 'BS-RED', 99.99, 'EGP', 60, '2025-03-26 08:16:32', NULL),
+(80, 10, 4, 5, 'HT-BLACK', 799.99, 'EGP', 20, '2025-03-26 08:16:32', NULL),
+(81, 11, 3, 8, 'FW-BLUE', 102221.00, 'EGP', 123, '2025-03-26 08:26:50', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `promocodes`
+--
+
+CREATE TABLE `promocodes` (
+  `id` int(20) UNSIGNED NOT NULL,
+  `code` varchar(50) NOT NULL,
+  `description` text DEFAULT NULL,
+  `discount_type` varchar(20) NOT NULL CHECK (`discount_type` in ('percentage','fixed')),
+  `discount_value` decimal(10,2) NOT NULL,
+  `min_cart_total` decimal(10,2) DEFAULT NULL,
+  `max_uses` int(11) DEFAULT 1,
+  `max_uses_per_user` int(11) DEFAULT 1,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -420,6 +478,7 @@ INSERT INTO `sub_categories` (`id`, `parent_id`, `name`, `description`, `created
 
 CREATE TABLE `users` (
   `id` bigint(11) NOT NULL,
+  `Google_ID` bigint(20) DEFAULT NULL,
   `avatar` varchar(255) DEFAULT NULL,
   `f_name` varchar(255) NOT NULL,
   `l_name` varchar(255) NOT NULL,
@@ -439,13 +498,26 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `created_at`, `deleted_at`, `gender`, `status`, `role`, `loyalty_points`) VALUES
-(2, NULL, 'omar', 'khaled', 'omar@ws', '$2y$10$61VA3IX7dC9RSK.nc.1RueR45XsdgU/ZK.zDeIJ8DV1F0CxKpboMa', '2000-10-18', '01286246292', '2025-03-10 10:35:57', NULL, 'male', 'active', 'admin', 0),
-(3, 'uploads/ali@ws/avatar.png', 'ali', 'ali', 'ali@ws', '$2y$10$cT2SNzyB462KlCiwvmkN9uvTIHMZNG7TU5ca31CLo68VOmSEkgk4a', '2000-10-18', '01286246292', '2025-04-08 09:21:02', NULL, 'male', 'active', 'user', 0),
-(2147483647, 'uploads/profile_pictures/33864171114794816dbc188b7f979d29.jpg', 'OMar', 'Khaled', 'ok3050802@gmail.com', '', '', '', '2025-04-13 09:56:48', NULL, '', 'active', 'user', 0),
-(2147483648, 'uploads/ahmed@ws/avatar.png', 'ahmed', 'ali', 'ahmed@ws', '$2y$10$Z0jp61c0NbOHFXv6cUABvezUu7mkdPVJgUn8znyyX.qDCckD9qov2', '2000-12-10', '012312', '2025-04-13 10:18:06', NULL, 'male', 'block', 'user', 0),
-(2147483649, 'uploads/khaled@ws/avatar.png', 'khaled', 'omar', 'khaled@ws', '$2y$10$X0LI.pVGwfLV3Uo.YRcbye1rR3c.ZTjJ/2CRLC0l02sOpMVt4V7EK', '2000-10-18', '012544585', '2025-04-13 10:39:43', NULL, 'male', 'active', 'user', 0),
-(9223372036854775807, 'uploads/profile_pictures/7d6619e920610789c244fcf976f9db43.jpg', 'Mohamed', 'Khaled', 'mohamed31887707@gmail.com', '', '', '', '2025-04-14 10:16:11', NULL, '', 'active', 'user', 0);
+INSERT INTO `users` (`id`, `Google_ID`, `avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `created_at`, `deleted_at`, `gender`, `status`, `role`, `loyalty_points`) VALUES
+(2, NULL, NULL, 'omar', 'khaled', 'omar@ws', '$2y$10$61VA3IX7dC9RSK.nc.1RueR45XsdgU/ZK.zDeIJ8DV1F0CxKpboMa', '2000-10-18', '01286246292', '2025-03-10 10:35:57', NULL, 'male', 'active', 'admin', 0),
+(3, NULL, 'uploads/ali@ws/avatar.png', 'ali', 'ali', 'ali@ws', '$2y$10$cT2SNzyB462KlCiwvmkN9uvTIHMZNG7TU5ca31CLo68VOmSEkgk4a', '2000-10-18', '01286246292', '2025-04-08 09:21:02', NULL, 'male', 'active', 'user', 0),
+(2147483647, 9223372036854775807, 'uploads/profile_pictures/33864171114794816dbc188b7f979d29.jpg', 'OMar', 'Khaled', 'ok3050802@gmail.com', '', '', '', '2025-04-13 09:56:48', NULL, '', 'active', 'user', 0),
+(2147483648, NULL, 'uploads/ahmed@ws/avatar.png', 'ahmed', 'ali', 'ahmed@ws', '$2y$10$Z0jp61c0NbOHFXv6cUABvezUu7mkdPVJgUn8znyyX.qDCckD9qov2', '2000-12-10', '012312', '2025-04-13 10:18:06', NULL, 'male', 'block', 'user', 0),
+(2147483649, NULL, 'uploads/khaled@ws/avatar.png', 'khaled', 'omar', 'khaled@ws', '$2y$10$X0LI.pVGwfLV3Uo.YRcbye1rR3c.ZTjJ/2CRLC0l02sOpMVt4V7EK', '2000-10-18', '012544585', '2025-04-13 10:39:43', NULL, 'male', 'active', 'user', 0),
+(9223372036854775807, NULL, 'uploads/profile_pictures/7d6619e920610789c244fcf976f9db43.jpg', 'Mohamed', 'Khaled', 'mohamed31887707@gmail.com', '', '', '', '2025-04-14 10:16:11', NULL, '', 'active', 'user', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_promocode_usage`
+--
+
+CREATE TABLE `user_promocode_usage` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(11) NOT NULL,
+  `promocode_id` int(20) UNSIGNED NOT NULL,
+  `used_count` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -466,21 +538,7 @@ CREATE TABLE `whishlist` (
 --
 
 INSERT INTO `whishlist` (`id`, `user_id`, `product_id`, `created_at`, `deleted_at`) VALUES
-(19, 2, 6, '2025-04-13 10:23:09', '2025-04-14 08:33:00'),
-(20, 9223372036854775807, 1, '2025-04-14 10:24:52', NULL),
-(21, 9223372036854775807, 2, '2025-04-14 10:25:00', NULL),
-(22, 9223372036854775807, 2, '2025-04-14 10:25:02', NULL),
-(23, 9223372036854775807, 6, '2025-04-14 10:29:30', NULL),
-(24, 9223372036854775807, 6, '2025-04-14 10:29:35', NULL),
-(25, 9223372036854775807, 6, '2025-04-14 10:29:47', NULL),
-(26, 9223372036854775807, 6, '2025-04-14 10:29:48', NULL),
-(27, 9223372036854775807, 6, '2025-04-14 10:29:48', NULL),
-(28, 9223372036854775807, 3, '2025-04-14 10:32:02', NULL),
-(29, 9223372036854775807, 3, '2025-04-14 10:32:04', NULL),
-(30, 9223372036854775807, 3, '2025-04-14 10:32:05', NULL),
-(31, 3, 1, '2025-04-14 10:32:20', NULL),
-(32, 3, 2, '2025-04-14 10:32:27', NULL),
-(33, 3, 6, '2025-04-14 11:08:30', NULL);
+(36, 2, 1, '2025-07-30 10:33:10', NULL);
 
 --
 -- Indexes for dumped tables
@@ -510,10 +568,23 @@ ALTER TABLE `cart_item`
   ADD KEY `product_sku_id` (`product_sku_id`);
 
 --
+-- Indexes for table `cart_promocodes`
+--
+ALTER TABLE `cart_promocodes`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `categories`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `discounts`
+--
+ALTER TABLE `discounts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
 
 --
 -- Indexes for table `loyalty_transactions`
@@ -576,6 +647,13 @@ ALTER TABLE `product_skus`
   ADD KEY `color_attribute_id` (`color_attribute_id`);
 
 --
+-- Indexes for table `promocodes`
+--
+ALTER TABLE `promocodes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`);
+
+--
 -- Indexes for table `sub_categories`
 --
 ALTER TABLE `sub_categories`
@@ -587,7 +665,16 @@ ALTER TABLE `sub_categories`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `Google_ID` (`Google_ID`),
   ADD KEY `email` (`email`);
+
+--
+-- Indexes for table `user_promocode_usage`
+--
+ALTER TABLE `user_promocode_usage`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `promocode_id` (`promocode_id`);
 
 --
 -- Indexes for table `whishlist`
@@ -611,19 +698,31 @@ ALTER TABLE `addresses`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `cart_item`
 --
 ALTER TABLE `cart_item`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `cart_promocodes`
+--
+ALTER TABLE `cart_promocodes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
+
+--
+-- AUTO_INCREMENT for table `discounts`
+--
+ALTER TABLE `discounts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `loyalty_transactions`
@@ -674,6 +773,12 @@ ALTER TABLE `product_skus`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
+-- AUTO_INCREMENT for table `promocodes`
+--
+ALTER TABLE `promocodes`
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `sub_categories`
 --
 ALTER TABLE `sub_categories`
@@ -686,10 +791,16 @@ ALTER TABLE `users`
   MODIFY `id` bigint(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9223372036854775807;
 
 --
+-- AUTO_INCREMENT for table `user_promocode_usage`
+--
+ALTER TABLE `user_promocode_usage`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `whishlist`
 --
 ALTER TABLE `whishlist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Constraints for dumped tables
@@ -714,6 +825,12 @@ ALTER TABLE `cart_item`
   ADD CONSTRAINT `cart_item_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `cart` (`id`),
   ADD CONSTRAINT `cart_item_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   ADD CONSTRAINT `cart_item_ibfk_3` FOREIGN KEY (`product_sku_id`) REFERENCES `product_skus` (`id`);
+
+--
+-- Constraints for table `discounts`
+--
+ALTER TABLE `discounts`
+  ADD CONSTRAINT `discounts_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 
 --
 -- Constraints for table `loyalty_transactions`
@@ -767,6 +884,13 @@ ALTER TABLE `product_skus`
 --
 ALTER TABLE `sub_categories`
   ADD CONSTRAINT `sub_categories_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `categories` (`id`);
+
+--
+-- Constraints for table `user_promocode_usage`
+--
+ALTER TABLE `user_promocode_usage`
+  ADD CONSTRAINT `user_promocode_usage_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `user_promocode_usage_ibfk_2` FOREIGN KEY (`promocode_id`) REFERENCES `promocodes` (`id`);
 
 --
 -- Constraints for table `whishlist`
