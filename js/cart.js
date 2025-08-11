@@ -9,7 +9,7 @@ function toggleCart() {
     cartDropdown.classList.toggle('show');
     
     if (cartDropdown.classList.contains('show')) {
-        loadCart();
+        loadCart('cartDropdownItems');
     }
 }
 
@@ -110,13 +110,13 @@ function updateCartItemQuantity(cartItemId, quantity) {
     });
 }
 
-function loadCart() {
+function loadCart(targetId = 'cartItems') {
     fetch('cart.php')
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
                 cart = data;
-                updateCartDisplay();
+                updateCartDisplay(targetId);
             } else {
                 showToast(data.message || 'Failed to load cart');
             }
@@ -127,14 +127,13 @@ function loadCart() {
         });
 }
 
-function updateCartDisplay() {
-    const cartItems = document.getElementById('cartItems');
-    
+function updateCartDisplay(targetId = 'cartItems') {
+    const cartItems = document.getElementById(targetId);
+    if (!cartItems) return;
     if (!cart.items || cart.items.length === 0) {
         cartItems.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
         return;
     }
-    // Use the currency of the first item for the total (assuming all items have the same currency)
     const totalCurrency = cart.items[0]?.currency || '';
     cartItems.innerHTML = cart.items.map(item => `
         <div class="cart-item">
@@ -178,7 +177,7 @@ function showToast(message) {
 }
 
 // Load cart when page loads
-document.addEventListener('DOMContentLoaded', loadCart);
+document.addEventListener('DOMContentLoaded', function() { loadCart('cartItems'); });
 
 // Export functions for use in other files
 window.addToCart = addToCart;

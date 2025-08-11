@@ -391,10 +391,12 @@ let slideIndex = 0;
             fetch(url)
                 .then(response => {
                     console.log('Response status:', response.status);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
+                    return response.text().then(text => {
+                        console.log('Raw response text:', text);
+                        let data;
+                        try { data = JSON.parse(text); } catch (e) { data = {status:'error', message:'Invalid JSON', raw:text}; }
+                        return data;
+                    });
                 })
                 .then(data => {
                     console.log('Wishlist data:', data);
@@ -439,7 +441,7 @@ let slideIndex = 0;
                     const wishlistContainer = document.getElementById('wishlistItems');
                     
                     // Check if the error is due to authentication
-                    if (error.message.includes('Authentication required')) {
+                    if (error.message && error.message.includes('Authentication required')) {
                         wishlistContainer.innerHTML = '<div class="error-message">Please log in to view your wishlist</div>';
                         // Redirect to login page after a short delay
                         setTimeout(() => {
