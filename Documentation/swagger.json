@@ -1,0 +1,1060 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Store1 E-commerce API",
+    "description": "Comprehensive API documentation for the Store1 e-commerce platform",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Store1 API Support",
+      "url": "http://localhost/Store1/"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost/Store1",
+      "description": "Development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "Session-based authentication using PHP sessions"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "User ID"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address"
+          },
+          "f_name": {
+            "type": "string",
+            "description": "First name"
+          },
+          "l_name": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "admin"],
+            "description": "User role"
+          },
+          "birthdate": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of birth"
+          },
+          "phone_no": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "gender": {
+            "type": "string",
+            "description": "Gender"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Product ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Product description"
+          },
+          "cover": {
+            "type": "string",
+            "description": "Product cover image URL"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Product price"
+          },
+          "Currancy": {
+            "type": "string",
+            "description": "Currency code"
+          }
+        }
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Cart item ID"
+          },
+          "product_id": {
+            "type": "integer",
+            "description": "Product ID"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Item price"
+          },
+          "product_name": {
+            "type": "string",
+            "description": "Product name"
+          },
+          "product_cover": {
+            "type": "string",
+            "description": "Product cover image"
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Comment ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "User ID"
+          },
+          "product_id": {
+            "type": "integer",
+            "description": "Product ID"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Comment creation date"
+          },
+          "user_name": {
+            "type": "string",
+            "description": "User display name"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["error"],
+            "description": "Error status"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      },
+      "Success": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success"],
+            "description": "Success status"
+          },
+          "message": {
+            "type": "string",
+            "description": "Success message"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/reg.php": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Creates a new user account with the provided information",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["f_name", "l_name", "email", "password"],
+                "properties": {
+                  "f_name": {
+                    "type": "string",
+                    "description": "First name"
+                  },
+                  "l_name": {
+                    "type": "string",
+                    "description": "Last name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password"
+                  },
+                  "birthdate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date of birth"
+                  },
+                  "phone_no": {
+                    "type": "string",
+                    "description": "Phone number"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "description": "Gender"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login.php": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticates user and creates session",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["success"]
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": ["user", "admin"]
+                    },
+                    "id": {
+                      "type": "integer"
+                    },
+                    "redirect": {
+                      "type": "string"
+                    },
+                    "userData": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_user_data.php": {
+      "get": {
+        "summary": "Get current user data",
+        "description": "Retrieves current user information from session",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "username": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Get dashboard data",
+        "description": "Retrieves dashboard information for authenticated user",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "username": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_product.php": {
+      "get": {
+        "summary": "Get all products",
+        "description": "Retrieves all products with pricing information",
+        "responses": {
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_product_details.php": {
+      "get": {
+        "summary": "Get product details",
+        "description": "Retrieves detailed information for a specific product",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Product ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cart.php": {
+      "get": {
+        "summary": "Get cart items",
+        "description": "Retrieves all items in the user's cart",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart items retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["success"]
+                    },
+                    "cart_id": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CartItem"
+                      }
+                    },
+                    "total": {
+                      "type": "number",
+                      "format": "decimal"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add item to cart",
+        "description": "Adds a product to the user's cart",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "quantity"],
+                "properties": {
+                  "product_id": {
+                    "type": "integer",
+                    "description": "Product ID"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "description": "Quantity to add"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item added to cart successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update cart item quantity",
+        "description": "Updates the quantity of an item in the cart",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cart_item_id", "quantity"],
+                "properties": {
+                  "cart_item_id": {
+                    "type": "integer",
+                    "description": "Cart item ID"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "description": "New quantity"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart item updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove item from cart",
+        "description": "Removes an item from the user's cart",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cart_item_id"],
+                "properties": {
+                  "cart_item_id": {
+                    "type": "integer",
+                    "description": "Cart item ID to remove"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item removed from cart successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist.php": {
+      "get": {
+        "summary": "Get wishlist items",
+        "description": "Retrieves all items in the user's wishlist",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User ID (must match authenticated user)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wishlist items retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["success"]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "product_id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "decimal"
+                          },
+                          "cover": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add item to wishlist",
+        "description": "Adds a product to the user's wishlist",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "product_id"],
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "description": "User ID"
+                  },
+                  "product_id": {
+                    "type": "integer",
+                    "description": "Product ID"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item added to wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove item from wishlist",
+        "description": "Removes an item from the user's wishlist",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "wishlist_id"],
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "description": "User ID"
+                  },
+                  "wishlist_id": {
+                    "type": "integer",
+                    "description": "Wishlist item ID"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item removed from wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comments.php": {
+      "get": {
+        "summary": "Get product comments",
+        "description": "Retrieves all comments for a specific product",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Product ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["success"]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Comment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add product comment",
+        "description": "Adds a comment to a product (requires authentication)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "comment"],
+                "properties": {
+                  "product_id": {
+                    "type": "integer",
+                    "description": "Product ID"
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Comment text"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["success"]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "description": "Comment ID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/update_profile.php": {
+      "post": {
+        "summary": "Update user profile",
+        "description": "Updates the current user's profile information",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "f_name": {
+                    "type": "string",
+                    "description": "First name"
+                  },
+                  "l_name": {
+                    "type": "string",
+                    "description": "Last name"
+                  },
+                  "birthdate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date of birth"
+                  },
+                  "phone_no": {
+                    "type": "string",
+                    "description": "Phone number"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "description": "Gender"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 
