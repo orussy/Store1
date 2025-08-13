@@ -4,6 +4,7 @@ let slideIndex = 0;
         // Function to create slides
         function createSlides() {
             const wrapper = document.getElementById('slideshow-wrapper');
+            if (!wrapper) return; // Not present on this page
             // Get images from PHP endpoint
             fetch('get_images.php')
                 .then(response => response.json())
@@ -61,6 +62,7 @@ let slideIndex = 0;
 
         function fetchProducts() {
             const container = document.getElementById('productsContainer');
+            if (!container) return; // Not a listing page
             container.innerHTML = '<div class="loading">Loading products...</div>';
 
             fetch('get_product.php')
@@ -99,18 +101,20 @@ let slideIndex = 0;
 
                 card.innerHTML = `
                     <div class="image-container">
-                        <img src="${product.cover}" 
-                             alt="${product.name}" 
-                             class="product-image">
+                        <a href="product-details.html?id=${product.product_id}">
+                            <img src="${product.cover}" 
+                                 alt="${product.name}" 
+                                 class="product-image">
+                        </a>
                     </div>
-                    <a href="#" class="product-name"><h3 class="product-name">${product.name}</h3></a>
+                    <a href="product-details.html?id=${product.product_id}" class="product-name"><h3 class="product-name">${product.name}</h3></a>
                     <p class="product-price">${product.price} ${product.Currancy}</p>
                     <p class="product-description">${product.description}</p>
                     <p class="product-quantity">${quantityText}</p>
 
                     <div class="product-buttons">
-                        <button onclick="addToWishlist(${product.product_id})" class="wishlist-btn">
-                            <i class="fa-solid fa-heart"></i>
+                        <button onclick="addToWishlist(${product.product_id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist">
+                            <i class="fa-solid fa-heart" aria-hidden="true"></i>
                         </button>
                         <button onclick="addToCart({
                             id: '${product.product_id}',
@@ -528,12 +532,14 @@ let slideIndex = 0;
         // Loading animation functions
         function showLoading() {
             const loadingOverlay = document.getElementById('loadingOverlay');
+            if (!loadingOverlay) return;
             loadingOverlay.style.display = 'flex';
             console.log('Loading animation shown');
         }
 
         function hideLoading() {
             const loadingOverlay = document.getElementById('loadingOverlay');
+            if (!loadingOverlay) return;
             loadingOverlay.style.display = 'none';
             console.log('Loading animation hidden');
         }
@@ -541,6 +547,8 @@ let slideIndex = 0;
         // Product loading function
         function loadProducts() {
             console.log('Starting to load products');
+            const productsContainer = document.getElementById('productsContainer');
+            if (!productsContainer) return; // Not on this page
             showLoading();
             
             fetch('get_products.php')
@@ -550,7 +558,6 @@ let slideIndex = 0;
                 })
                 .then(data => {
                     console.log('Processing product data');
-                    const productsContainer = document.getElementById('productsContainer');
                     productsContainer.innerHTML = ''; // Clear existing products
                     
                     data.forEach(product => {
@@ -575,7 +582,6 @@ let slideIndex = 0;
                 })
                 .catch(error => {
                     console.error('Error loading products:', error);
-                    const productsContainer = document.getElementById('productsContainer');
                     productsContainer.innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
                 })
                 .finally(() => {
