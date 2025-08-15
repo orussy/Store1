@@ -1,3 +1,6 @@
+// NO AUTO-REDIRECT LOGIC - Users must manually log in
+console.log('Login page loaded - NO AUTO-REDIRECT');
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorMessage = document.getElementById('error-message');
@@ -35,20 +38,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Check if user is already logged in
-async function checkLoginStatus() {
-    try {
-        const response = await fetch('get_user_data.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.username) {
-                window.location.href = 'dashboard.html';
-            }
-        }
-    } catch (error) {
-        console.error('Error checking login status:', error);
-    }
-}
+// Auto-redirect functionality removed - users must manually log in
 function handleGoogleLogin(response) {
     try {
         console.log('Google response received:', response);
@@ -112,5 +102,5 @@ function decodeJwtResponse(token) {
         throw new Error('Failed to decode token');
     }
 }
-// Check login status when page loads
-window.addEventListener('load', checkLoginStatus); 
+// Check login status when page loads - DISABLED to prevent auto-redirect
+// window.addEventListener('load', checkLoginStatus); 
