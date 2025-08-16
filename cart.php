@@ -61,12 +61,17 @@ function getCart($conn, $user_id) {
             $cart_id = $cart['id'];
         }
 
-        // Get cart items with product details and price from product_skus
+        // Get cart items with product details, price from product_skus, and discount information
         $stmt = $conn->prepare(
-            "SELECT ci.*, p.name, p.cover, ps.price 
+            "SELECT ci.*, p.name, p.cover, ps.price, ps.Currancy,
+                    d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
              FROM cart_item ci 
              JOIN products p ON ci.product_id = p.id 
              JOIN product_skus ps ON ci.product_sku_id = ps.id 
+             LEFT JOIN discounts d ON p.id = d.product_id 
+             AND d.is_active = 1 
+             AND (d.start_date IS NULL OR d.start_date <= CURDATE())
+             AND (d.end_date IS NULL OR d.end_date >= CURDATE())
              WHERE ci.cart_id = ?"
         );
         if (!$stmt) {
@@ -78,7 +83,30 @@ function getCart($conn, $user_id) {
         $items = [];
         $total = 0;
         while ($item = $result->fetch_assoc()) {
-            $total += $item['price'] * $item['quantity'];
+            // Calculate final price with discount
+            $originalPrice = floatval($item['price']);
+            $finalPrice = $originalPrice;
+            $hasDiscount = false;
+            
+            if (!empty($item['discount_type']) && !empty($item['discount_value'])) {
+                $discountValue = floatval($item['discount_value']);
+                
+                if ($item['discount_type'] === 'percentage') {
+                    $finalPrice = $originalPrice - ($originalPrice * $discountValue / 100);
+                } else { // fixed amount
+                    $finalPrice = $originalPrice - $discountValue;
+                }
+                
+                // Ensure final price doesn't go below 0
+                $finalPrice = max(0, $finalPrice);
+                $hasDiscount = true;
+            }
+            
+            $item['original_price'] = number_format($originalPrice, 2);
+            $item['final_price'] = number_format($finalPrice, 2);
+            $item['has_discount'] = $hasDiscount;
+            
+            $total += $finalPrice * $item['quantity'];
             $items[] = $item;
         }
 

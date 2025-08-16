@@ -49,10 +49,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         // Get wishlist items
         $stmt = $conn->prepare("
-            SELECT w.id, p.id as product_id, p.name, ps.price, p.cover
+            SELECT w.id, p.id as product_id, p.name, ps.price, ps.Currancy, p.cover,
+                   d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
             FROM whishlist w 
             JOIN products p ON w.product_id = p.id 
             JOIN product_skus ps ON p.id = ps.product_id
+            LEFT JOIN discounts d ON p.id = d.product_id 
+            AND d.is_active = 1 
+            AND (d.start_date IS NULL OR d.start_date <= CURDATE())
+            AND (d.end_date IS NULL OR d.end_date >= CURDATE())
             WHERE w.user_id = ? AND w.deleted_at IS NULL
         ");
         if (!$stmt) {
@@ -66,6 +71,29 @@ switch ($_SERVER['REQUEST_METHOD']) {
         
         $items = [];
         while ($row = $result->fetch_assoc()) {
+            // Calculate final price with discount
+            $originalPrice = floatval($row['price']);
+            $finalPrice = $originalPrice;
+            $hasDiscount = false;
+            
+            if (!empty($row['discount_type']) && !empty($row['discount_value'])) {
+                $discountValue = floatval($row['discount_value']);
+                
+                if ($row['discount_type'] === 'percentage') {
+                    $finalPrice = $originalPrice - ($originalPrice * $discountValue / 100);
+                } else { // fixed amount
+                    $finalPrice = $originalPrice - $discountValue;
+                }
+                
+                // Ensure final price doesn't go below 0
+                $finalPrice = max(0, $finalPrice);
+                $hasDiscount = true;
+            }
+            
+            $row['original_price'] = number_format($originalPrice, 2);
+            $row['final_price'] = number_format($finalPrice, 2);
+            $row['has_discount'] = $hasDiscount;
+            
             $items[] = $row;
         }
         

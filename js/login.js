@@ -102,5 +102,26 @@ function decodeJwtResponse(token) {
         throw new Error('Failed to decode token');
     }
 }
-// Check login status when page loads - DISABLED to prevent auto-redirect
-// window.addEventListener('load', checkLoginStatus); 
+// Check login status when page loads - AUTO-REDIRECT if already logged in
+console.log('Login page loaded - checking login status...');
+
+// Function to check if user is already logged in
+function checkLoginStatus() {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+        try {
+            const user = JSON.parse(userData);
+            console.log('User already logged in:', user);
+            console.log('Auto-redirecting to dashboard...');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            localStorage.removeItem('userData');
+        }
+    } else {
+        console.log('No user data found - user needs to log in');
+    }
+}
+
+// Check login status when page loads
+window.addEventListener('load', checkLoginStatus); 

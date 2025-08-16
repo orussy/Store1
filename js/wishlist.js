@@ -24,16 +24,40 @@ function fetchWishlist() {
             container.innerHTML = '';
             if (data.status === 'success' && data.items.length > 0) {
                 data.items.forEach(item => {
+                    // Generate price display with discount
+                    let priceDisplay = '';
+                    if (item.has_discount) {
+                        if (item.discount_type === 'percentage') {
+                            priceDisplay = `
+                                <div class="price-container">
+                                    <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                                    <span class="discount-badge">-${item.discount_value}%</span>
+                                    <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                </div>
+                            `;
+                        } else { // fixed amount
+                            priceDisplay = `
+                                <div class="price-container">
+                                    <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                                    <span class="discount-badge">-${item.discount_value} ${item.Currancy}</span>
+                                    <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        priceDisplay = `<p>Price: ${item.price} ${item.Currancy}</p>`;
+                    }
+                    
                     const card = document.createElement('div');
                     card.className = 'wishlist-item';
                     card.innerHTML = `
                         <img src="${item.cover}" alt="${item.name}" class="wishlist-img">
                         <div class="wishlist-info">
                             <h3>${item.name}</h3>
-                            <p>Price: $${item.price}</p>
+                            ${priceDisplay}
                             <div class="wishlist-actions">
                                 <button onclick="removeFromWishlist(${item.id})">Remove</button>
-                                <button onclick='addToCart({id: ${item.product_id}, name: "${item.name.replace(/'/g, "\\'")}", price: ${item.price}, image: "${item.cover}"})' class="add-to-cart">Add to Cart</button>
+                                <button onclick='addToCart({id: ${item.product_id}, name: "${item.name.replace(/'/g, "\\'")}", price: ${item.has_discount ? item.final_price : item.price}, image: "${item.cover}"})' class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
                     `;

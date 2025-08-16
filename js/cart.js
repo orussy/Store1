@@ -134,26 +134,53 @@ function updateCartDisplay(targetId = 'cartItems') {
         cartItems.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
         return;
     }
-    const totalCurrency = cart.items[0]?.currency || '';
-    cartItems.innerHTML = cart.items.map(item => `
-        <div class="cart-item">
-            <img src="${item.cover}" alt="${item.name}">
-            <div class="cart-item-details">
-                <h4>${item.name}</h4>
-                <div class="quantity-controls">
-                    <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity - 1})" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
-                    <span>${item.quantity}</span>
-                    <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">+</button>
+    const totalCurrency = cart.items[0]?.Currancy || '';
+    cartItems.innerHTML = cart.items.map(item => {
+        // Generate price display with discount
+        let priceDisplay = '';
+        if (item.has_discount) {
+            if (item.discount_type === 'percentage') {
+                priceDisplay = `
+                    <div class="price-container">
+                        <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                        <span class="discount-badge">-${item.discount_value}%</span>
+                        <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                    </div>
+                `;
+            } else { // fixed amount
+                priceDisplay = `
+                    <div class="price-container">
+                        <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                        <span class="discount-badge">-${item.discount_value} ${item.Currancy}</span>
+                        <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                    </div>
+                `;
+            }
+        } else {
+            priceDisplay = `<div class="price">${item.price} ${item.Currancy}</div>`;
+        }
+        
+        return `
+            <div class="cart-item">
+                <img src="${item.cover}" alt="${item.name}">
+                <div class="cart-item-details">
+                    <h4>${item.name}</h4>
+                    <div class="quantity-controls">
+                        <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity - 1})" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                        <span>${item.quantity}</span>
+                        <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                    </div>
+                    ${priceDisplay}
+                    <div class="item-total">Total: ${(parseFloat(item.has_discount ? item.final_price : item.price) * item.quantity).toFixed(2)} ${item.Currancy}</div>
                 </div>
-                <div class="price">${item.price * item.quantity} ${item.currency || ''}</div>
+                <button class="remove-cart" onclick="removeFromCart(${item.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
-            <button class="remove-cart" onclick="removeFromCart(${item.id})">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    `).join('') + `
+        `;
+    }).join('') + `
         <div class="cart-total">
-            <strong>Total: ${cart.total} ${totalCurrency}</strong>
+            <strong>Total: ${cart.total.toFixed(2)} ${totalCurrency}</strong>
         </div>
     `;
 }
