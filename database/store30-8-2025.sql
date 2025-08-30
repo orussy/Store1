@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 30, 2025 at 08:09 PM
+-- Generation Time: Aug 30, 2025 at 09:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -29,16 +29,29 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `addresses` (
   `id` int(11) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
   `address1` varchar(255) NOT NULL,
-  `address2` varchar(255) NOT NULL,
+  `address2` varchar(255) DEFAULT NULL,
   `country` varchar(255) NOT NULL,
   `city` varchar(255) NOT NULL,
   `postal_code` varchar(255) NOT NULL,
+  `latitude` decimal(10,8) NOT NULL,
+  `longitude` decimal(11,8) NOT NULL,
+  `location_accuracy` enum('exact','approximate','general') DEFAULT 'approximate',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `addresses`
+--
+
+INSERT INTO `addresses` (`id`, `user_id`, `title`, `address1`, `address2`, `country`, `city`, `postal_code`, `latitude`, `longitude`, `location_accuracy`, `created_at`, `deleted_at`) VALUES
+(2, 1, 'Office', '14 Nile Corniche', 'Floor 7', 'EG', 'Cairo', '11511', 30.06424200, 31.46109700, 'exact', '2025-08-29 21:20:00', NULL),
+(3, 1, 'Warehouse', '220 Industrial Rd', 'Building A', 'DE', 'Berlin', '10115', 0.00000000, 0.00000000, 'approximate', '2025-08-25 16:30:00', NULL),
+(4, 1, 'Vacation Home', '88 Palm Jumeirah Blvd', 'Villa 12', 'AE', 'Dubai', '00000', 0.00000000, 0.00000000, 'approximate', '2025-08-21 01:45:00', '2025-08-29 19:00:00'),
+(5, 1, 'Billing Address', '502 Oxford Street', 'Suite 21', 'UK', 'London', 'W1D 1BS', 0.00000000, 0.00000000, 'approximate', '2025-08-15 18:10:00', NULL);
 
 -- --------------------------------------------------------
 
@@ -568,7 +581,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `Google_ID`, `avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `created_at`, `deleted_at`, `gender`, `status`, `role`, `loyalty_points`) VALUES
-(1, 9223372036854775807, 'uploads/profile_pictures/33864171114794816dbc188b7f979d29.jpg', 'omar', 'Khaled', 'ok3050802@gmail.com', '$2y$10$tmtTdfjLzJmRONB.clzRled515/.chl8cjjRMNEhiNASsgUjJaHHC', '2000-10-18', '01286246292', '2025-08-15 17:08:57', NULL, 'male', 'active', 'admin', 0),
+(1, 9223372036854775807, 'uploads/profile_pictures/33864171114794816dbc188b7f979d29.jpg', 'OMar', 'Khaled', 'ok3050802@gmail.com', '$2y$10$tmtTdfjLzJmRONB.clzRled515/.chl8cjjRMNEhiNASsgUjJaHHC', '2000-10-18', '01286246292', '2025-08-15 17:08:57', NULL, 'male', 'active', 'admin', 0),
 (2, NULL, 'uploads/gelan21867@baxidy.com/avatar.png', 'ahmed', 'ali', 'gelan21867@baxidy.com', '$2y$10$lQroJV.dNeUMj/bZ4MUYqeLEcGtwv5Be3K01FdAt1.n8aVy0FiHZu', '2000-12-15', '01286246292', '2025-08-15 20:20:37', NULL, 'male', 'active', 'user', 0),
 (3, NULL, 'uploads/it.helpdesk@hungerstationbfc.com/avatar.png', 'it', 'helpdesk', 'it.helpdesk@hungerstationbfc.com', '$2y$10$ctXUzmWVtN6I.tpxUpYu.eIFI9ej2URXEd.cW3Hog8rZm4cEEmaBC', '2000-12-12', '01222222222', '2025-08-17 09:19:35', NULL, 'male', 'active', 'user', 0),
 (4, NULL, 'uploads/gitoni4718@besaies.com/avatar.png', 'gu', 'II', 'gitoni4718@besaies.com', '$2y$10$rb/wc6fIQICVLg6TGyv4e.Ew5KbbntzGXn1WI7E.NXMsROJlP4M4K', '0222-12-12', '122', '2025-08-30 15:16:55', NULL, 'male', 'active', 'user', 0);
@@ -888,6 +901,12 @@ ALTER TABLE `whishlist`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `addresses`
+--
+ALTER TABLE `addresses`
+  ADD CONSTRAINT `addresses_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `comments`
