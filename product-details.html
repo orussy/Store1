@@ -8,10 +8,97 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 	<style>
 		.product-details { max-width: 1200px; margin: 120px auto 40px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-		.product-details img { width: 100%; height: 400px; object-fit: contain; background: #f5f5f5; border-radius: 6px; }
+		.product-details img { width: 98%;  object-fit: contain; background: #f5f5f5; border-radius: 6px; }
 		.product-info h1 { color: #0d3b5e; margin-bottom: 10px; }
 		.product-info .price { color: #e44d26; font-weight: bold; margin: 10px 0; }
 		.product-actions { display: flex; gap: 10px; margin-top: 15px; }
+		
+		/* Product Image Gallery Styles */
+		.product-image-container { 
+			display: flex; 
+			gap: 20px; 
+			align-items: flex-start; 
+		}
+		.thumbnail-column { 
+			display: flex; 
+			flex-direction: column; 
+			gap: 8px; 
+			max-height: 400px; 
+			overflow-y: auto; 
+			flex-shrink: 0;
+			width: 100px;
+			padding: 5px 0;
+		}
+		.main-image-area { 
+			flex: 1; 
+			min-width: 0;
+		}
+		.main-product-image { 
+			width: 100%; 
+			height: 500px; 
+			object-fit: contain; 
+			background: #f5f5f5; 
+			border-radius: 6px; 
+			transition: all 0.3s ease; 
+		}
+		.thumbnail { 
+			width: 60px; 
+			height: 60px; 
+			object-fit: cover; 
+			border: 2px solid #ddd; 
+			border-radius: 4px; 
+			cursor: pointer; 
+			transition: all 0.3s ease; 
+			flex-shrink: 0; 
+		}
+		.thumbnail:hover { 
+			border-color: #0d3b5e; 
+			transform: scale(1.05); 
+			box-shadow: 0 2px 8px rgba(13, 59, 94, 0.2); 
+		}
+		.thumbnail.active { 
+			border-color: #0d3b5e; 
+			box-shadow: 0 2px 8px rgba(13, 59, 94, 0.3); 
+		}
+		.no-thumbnails { 
+			color: #666; 
+			font-style: italic; 
+			margin-top: 10px; 
+			text-align: center; 
+		}
+		.thumbnail-container { 
+			position: relative; 
+		}
+		.thumbnail-container::after { 
+			content: ''; 
+			position: absolute; 
+			top: 0; 
+			left: 0; 
+			right: 0; 
+			bottom: 0; 
+			background: rgba(13, 59, 94, 0.1); 
+			opacity: 0; 
+			transition: opacity 0.3s ease; 
+			pointer-events: none; 
+		}
+		.thumbnail-container:hover::after { 
+			opacity: 1; 
+		}
+		/* Scrollbar styling for thumbnails */
+		.thumbnail-column::-webkit-scrollbar {
+			width: 6px;
+		}
+		.thumbnail-column::-webkit-scrollbar-track {
+			background: #f1f1f1;
+			border-radius: 3px;
+		}
+		.thumbnail-column::-webkit-scrollbar-thumb {
+			background: #0d3b5e;
+			border-radius: 3px;
+		}
+		.thumbnail-column::-webkit-scrollbar-thumb:hover {
+			background: #0a2d47;
+		}
 	</style>
 </head>
 <body>
@@ -68,8 +155,11 @@
 	</div>
 
 	<div class="product-details">
-		<div class="product-image">
-			<img id="productImage" src="" alt="Product Image">
+		<div class="product-image-container">
+			<div id="productThumbnails" class="thumbnail-column"></div>
+			<div class="main-image-area">
+				<img id="productImage" class="main-product-image" src="" alt="Product Image">
+			</div>
 		</div>
 		<div class="product-info">
 			<h1 id="productName"></h1>
@@ -130,18 +220,130 @@
 				document.getElementById('productImage').src = product.cover || 'img/product/1.jpg';
 				document.getElementById('productName').textContent = product.name || '';
 				document.getElementById('productSummary').textContent = product.summary || '';
-				document.getElementById('productPrice').textContent = (product.price ? product.price : '') + (product.Currancy ? ' ' + product.Currancy : '');
+				
+				// Check if product is out of stock
+				const isOutOfStock = !product.total_quantity || product.total_quantity <= 0;
+				
+				// Add out of stock indicator under product name if needed
+				const productNameElement = document.getElementById('productName');
+				if (isOutOfStock) {
+					productNameElement.innerHTML = `
+						${product.name || ''}
+						<span class="out-of-stock-badge">Out of Stock</span>
+					`;
+				}
+				
+				// Display price with discount information
+				const priceElement = document.getElementById('productPrice');
+				if (product.has_discount) {
+					if (product.discount_type === 'percentage') {
+						priceElement.innerHTML = `
+							<div class="price-container">
+								<span class="original-price">${product.original_price} ${product.Currancy}</span>
+								<span class="discount-badge">-${product.discount_value}%</span>
+								<span class="final-price">${product.final_price} ${product.Currancy}</span>
+							</div>
+						`;
+					} else { // fixed amount
+						priceElement.innerHTML = `
+							<div class="price-container">
+								<span class="original-price">${product.original_price} ${product.Currancy}</span>
+								<span class="discount-badge">-${product.discount_value} ${product.Currancy}</span>
+								<span class="final-price">${product.final_price} ${product.Currancy}</span>
+							</div>
+						`;
+					}
+				} else {
+					priceElement.textContent = (product.price ? product.price : '') + (product.Currancy ? ' ' + product.Currancy : '');
+				}
+				
 				document.getElementById('productDescription').textContent = product.description || '';
-				// Bind actions
-				document.getElementById('addToCartBtn').onclick = function() {
-					addToCart({ id: product.id, name: product.name, price: parseFloat(product.price || 0), image: product.cover });
-				};
+				
+				// Handle add to cart button based on stock
+				const addToCartBtn = document.getElementById('addToCartBtn');
+				if (isOutOfStock) {
+					addToCartBtn.textContent = 'Out of Stock';
+					addToCartBtn.disabled = true;
+					addToCartBtn.classList.add('out-of-stock');
+					addToCartBtn.onclick = null; // Remove click handler
+				} else {
+					// Bind actions for in-stock products
+					addToCartBtn.onclick = function() {
+						addToCart({ 
+							id: product.id, 
+							name: product.name, 
+							price: parseFloat(product.has_discount ? product.final_price : product.price || 0), 
+							image: product.cover 
+						});
+					};
+				}
+				
 				document.getElementById('addToWishlistBtn').onclick = function() { addToWishlist(product.id); };
 
-				// Load comments and related products
-				await Promise.all([loadComments(id), loadRelated(product)]);
+				// Load product images, comments and related products
+				await Promise.all([loadProductImages(id), loadComments(id), loadRelated(product)]);
 				initRelatedControls();
 			} catch(e) { console.error(e); }
+		}
+
+		async function loadProductImages(productId) {
+			try {
+				const response = await fetch('get_product_images.php?id=' + encodeURIComponent(productId));
+				const data = await response.json();
+				
+				if (data.status === 'success' && data.images && data.images.length > 0) {
+					const thumbnailsContainer = document.getElementById('productThumbnails');
+					const mainImage = document.getElementById('productImage');
+					const coverImage = data.cover_image || 'img/product/1.jpg';
+					let currentActiveImage = coverImage;
+					
+					// Create thumbnails
+					data.images.forEach((imagePath, index) => {
+						const thumbnail = document.createElement('img');
+						thumbnail.src = imagePath;
+						thumbnail.alt = 'Product Image ' + (index + 1);
+						thumbnail.className = 'thumbnail';
+						
+						// Add hover event to change main image
+						thumbnail.addEventListener('mouseenter', function() {
+							mainImage.src = imagePath;
+							currentActiveImage = imagePath;
+							// Update active thumbnail
+							document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+							this.classList.add('active');
+						});
+						
+						// Add click event to set as active
+						thumbnail.addEventListener('click', function() {
+							mainImage.src = imagePath;
+							currentActiveImage = imagePath;
+							document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+							this.classList.add('active');
+						});
+						
+						thumbnailsContainer.appendChild(thumbnail);
+					});
+					
+					// Add mouse leave event to return to cover image when not hovering
+					thumbnailsContainer.addEventListener('mouseleave', function() {
+						// Only return to cover if no thumbnail is currently active
+						const activeThumbnail = document.querySelector('.thumbnail.active');
+						if (!activeThumbnail) {
+							mainImage.src = coverImage;
+							currentActiveImage = coverImage;
+						}
+					});
+					
+				} else {
+					// No additional images found
+					const thumbnailsContainer = document.getElementById('productThumbnails');
+					thumbnailsContainer.innerHTML = '<p class="no-thumbnails">No additional images available</p>';
+				}
+			} catch (error) {
+				console.error('Error loading product images:', error);
+				const thumbnailsContainer = document.getElementById('productThumbnails');
+				thumbnailsContainer.innerHTML = '<p class="no-thumbnails">Error loading images</p>';
+			}
 		}
 
 		async function loadComments(productId) {

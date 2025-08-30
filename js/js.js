@@ -99,27 +99,51 @@ let slideIndex = 0;
                 // Determine the quantity text
                 const quantityText = product.quantity > 0 ? '' : 'Out of Stock';
 
+                // Generate price display with discount
+                let priceDisplay = '';
+                if (product.has_discount) {
+                    if (product.discount_type === 'percentage') {
+                        priceDisplay = `
+                            <div class="price-container">
+                                <span class="original-price">${product.original_price} ${product.Currancy}</span>
+                                <span class="discount-badge">-${product.discount_value}%</span>
+                                <span class="final-price">${product.final_price} ${product.Currancy}</span>
+                            </div>
+                        `;
+                    } else { // fixed amount
+                        priceDisplay = `
+                            <div class="price-container">
+                                <span class="original-price">${product.original_price} ${product.Currancy}</span>
+                                <span class="discount-badge">-${product.discount_value} ${product.Currancy}</span>
+                                <span class="final-price">${product.final_price} ${product.Currancy}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    priceDisplay = `<p class="product-price">${product.price} ${product.Currancy}</p>`;
+                }
+
                 card.innerHTML = `
                     <div class="image-container">
-                        <a href="product-details.html?id=${product.product_id}">
+                        <a href="product-details.html?id=${product.id}">
                             <img src="${product.cover}" 
                                  alt="${product.name}" 
                                  class="product-image">
                         </a>
                     </div>
-                    <a href="product-details.html?id=${product.product_id}" class="product-name"><h3 class="product-name">${product.name}</h3></a>
-                    <p class="product-price">${product.price} ${product.Currancy}</p>
+                    <a href="product-details.html?id=${product.id}" class="product-name"><h3 class="product-name">${product.name}</h3></a>
+                    ${priceDisplay}
                     <p class="product-description">${product.description}</p>
                     <p class="product-quantity">${quantityText}</p>
 
                     <div class="product-buttons">
-                        <button onclick="addToWishlist(${product.product_id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist">
+                        <button onclick="addToWishlist(${product.id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist">
                             <i class="fa-solid fa-heart" aria-hidden="true"></i>
                         </button>
                         <button onclick="addToCart({
-                            id: '${product.product_id}',
+                            id: '${product.id}',
                             name: '${product.name}',
-                            price: ${parseFloat(product.price)},
+                            price: ${parseFloat(product.has_discount ? product.final_price : product.price)},
                             image: '${product.cover}'
                         })" class="add-to-cart" ${product.quantity <= 0 ? 'disabled' : ''}>
                             <i class="fa-solid fa-cart-shopping"></i>
@@ -230,12 +254,12 @@ let slideIndex = 0;
             }
         });
 
-        // Check login status when page loads
+        // Check login status when page loads (validate with server to avoid stale localStorage)
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Checking login status...');
+            console.log('Checking login status with server validation...');
             const userDataStr = localStorage.getItem('userData');
             console.log('Raw userData from localStorage:', userDataStr);
-            
+
             let userData;
             try {
                 userData = JSON.parse(userDataStr);
@@ -249,19 +273,53 @@ let slideIndex = 0;
             const userSection = document.getElementById('userSection');
             const usernameSpan = document.getElementById('username');
 
-            if (userData && userData.email) {
-                console.log('User is logged in with email:', userData.email);
-                console.log('User ID:', userData.id);
-                // User is logged in
-                loginSection.style.display = 'none';
-                userSection.style.display = 'flex';
-                usernameSpan.textContent = userData.email;
-            } else {
-                console.log('User is not logged in or missing email');
-                // User is not logged in
-                loginSection.style.display = 'flex';
-                userSection.style.display = 'none';
+            // Hide both until we validate
+            if (loginSection) loginSection.style.display = 'none';
+            if (userSection) userSection.style.display = 'none';
+
+            if (!userData || !userData.email) {
+                console.log('No local user data; showing login');
+                if (loginSection) loginSection.style.display = 'flex';
+                if (userSection) userSection.style.display = 'none';
+                return;
             }
+
+            // Validate session with server
+            fetch('get_user_profile.php')
+                .then(response => response.text().then(text => {
+                    let data; try { data = JSON.parse(text); } catch (e) { data = { status: 'error', message: 'Invalid JSON', raw: text }; }
+                    return data;
+                }))
+                .then(data => {
+                    console.log('Session validation response:', data);
+                    if (data && data.status === 'success' && data.userData && data.userData.email) {
+                        // Server confirms session is valid
+                        if (loginSection) loginSection.style.display = 'none';
+                        if (userSection) userSection.style.display = 'flex';
+                        if (usernameSpan) usernameSpan.textContent = data.userData.email;
+                        // Sync localStorage with server data
+                        try {
+                            localStorage.setItem('userData', JSON.stringify({
+                                id: data.userData.id,
+                                email: data.userData.email,
+                                role: data.userData.role || 'user',
+                                avatar: data.userData.avatar || ''
+                            }));
+                        } catch (e) { console.warn('Failed to sync userData to localStorage:', e); }
+                    } else {
+                        console.log('Server indicates not authenticated; clearing local data and showing login');
+                        localStorage.removeItem('userData');
+                        if (loginSection) loginSection.style.display = 'flex';
+                        if (userSection) userSection.style.display = 'none';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error validating session with server:', err);
+                    // On error, be safe and require login
+                    localStorage.removeItem('userData');
+                    if (loginSection) loginSection.style.display = 'flex';
+                    if (userSection) userSection.style.display = 'none';
+                });
         });
 
         function logout() {
@@ -416,17 +474,40 @@ let slideIndex = 0;
                         // Add each item to the wishlist
                         data.items.forEach(item => {
                             console.log('Adding item to wishlist:', item);
+                            
+                            // Generate price display with discount
+                            let priceDisplay = '';
+                            if (item.has_discount) {
+                                if (item.discount_type === 'percentage') {
+                                    priceDisplay = `
+                                        <div class="price-container">
+                                            <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                                            <span class="discount-badge">-${item.discount_value}%</span>
+                                            <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                        </div>
+                                    `;
+                                } else { // fixed amount
+                                    priceDisplay = `
+                                        <div class="price-container">
+                                            <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                                            <span class="discount-badge">-${item.discount_value} ${item.Currancy}</span>
+                                            <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                        </div>
+                                    `;
+                                }
+                            } else {
+                                priceDisplay = `<p class="price">${item.price} ${item.Currancy}</p>`;
+                            }
+                            
                             const wishlistItem = document.createElement('div');
                             wishlistItem.className = 'wishlist-item';
                             wishlistItem.innerHTML = `
                                 <img src="${item.cover}" alt="${item.name}">
                                 <div class="wishlist-item-details">
                                     <h4>${item.name}</h4>
-                                    <p class="price">$${item.price}</p>
+                                    ${priceDisplay}
                                 </div>
                                 <div class="wishlist-item-actions">
-                                    
-                                    
                                     <button onclick="removeFromWishlist(${item.id})" class="remove-wishlist">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>

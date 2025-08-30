@@ -1,3 +1,6 @@
+// NO AUTO-REDIRECT LOGIC - Users must manually log in
+console.log('Login page loaded - NO AUTO-REDIRECT');
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorMessage = document.getElementById('error-message');
@@ -35,20 +38,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Check if user is already logged in
-async function checkLoginStatus() {
-    try {
-        const response = await fetch('get_user_data.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.username) {
-                window.location.href = 'dashboard.html';
-            }
-        }
-    } catch (error) {
-        console.error('Error checking login status:', error);
-    }
-}
+// Auto-redirect functionality removed - users must manually log in
 function handleGoogleLogin(response) {
     try {
         console.log('Google response received:', response);
@@ -80,7 +70,8 @@ function handleGoogleLogin(response) {
                 localStorage.setItem('userData', JSON.stringify({
                     email: data.email,
                     role: data.role,
-                    id: data.id
+                    id: data.id,
+                    avatar: data.avatar || ''
                 }));
                 window.location.href = 'dashboard.html';
             } else {
@@ -112,5 +103,26 @@ function decodeJwtResponse(token) {
         throw new Error('Failed to decode token');
     }
 }
+// Check login status when page loads - AUTO-REDIRECT if already logged in
+console.log('Login page loaded - checking login status...');
+
+// Function to check if user is already logged in
+function checkLoginStatus() {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+        try {
+            const user = JSON.parse(userData);
+            console.log('User already logged in:', user);
+            console.log('Auto-redirecting to dashboard...');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            localStorage.removeItem('userData');
+        }
+    } else {
+        console.log('No user data found - user needs to log in');
+    }
+}
+
 // Check login status when page loads
 window.addEventListener('load', checkLoginStatus); 

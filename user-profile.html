@@ -1,0 +1,309 @@
+<?php
+session_start();
+
+// Simple session check - redirect if not logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: index.html');
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Store1</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/user-profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar (exactly like the image) -->
+    <div class="navbar">
+        <div class="left">
+            <a href="dashboard.html">
+                <img src="img/store logo with one element on a white background.png" alt="Store Logo">
+            </a>
+        </div>
+        <div class="center">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <div class="right">
+            <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
+            <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
+            <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
+            <img src="img/phone-solid.svg" alt="Phone" class="nav-icon">
+            
+            <!-- Cart dropdown -->
+            <div class="cart-dropdown" id="cartDropdown">
+                <div class="cart-header">
+                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.html">Shopping Cart</a></h3>
+                </div>
+                <div id="cartItems"></div>
+            </div>
+
+            <!-- Wishlist dropdown -->
+            <div class="wishlist-dropdown" id="wishlistDropdown">
+                <div class="wishlist-header">
+                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.html"> My Wishlist</a></h3>
+                </div>
+                <div id="wishlistItems"></div>
+            </div>
+
+            <!-- Notifications dropdown -->
+            <div class="notifications-dropdown" id="notificationsDropdown">
+                <div class="notifications-header">
+                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                </div>
+                <div id="notificationsItems">
+                    <!-- Notifications will be dynamically inserted here -->
+                </div>
+            </div>
+            
+            <!-- Email and User section -->
+            <div class="user-section">
+                <span id="userEmail" class="user-email"></span>
+                <a href="user-profile.html" class="nav-link">
+                    <img src="img/user-solid.svg" alt="Profile" class="nav-icon">
+                </a>
+                <a href="#" class="nav-link" onclick="logout()">
+                    <img src="img/right-from-bracket-solid.svg" alt="Logout" class="nav-icon">
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="user-image-placeholder" id="userImageContainer"></div>
+                <div class="user-name-placeholder">
+                    <span>Name</span>
+                </div>
+               
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="personal">
+                    <i class="fas fa-user"></i>
+                    <span>Personal Information</span>
+                </a>
+                <a href="#" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Account Settings</span>
+                </a>
+                <a href="#" class="nav-item" data-section="history">
+                    <i class="fas fa-history"></i>
+                    <span>History purchase</span>
+                </a>
+                <a href="#" class="nav-item" data-section="status">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Account Status</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Content will be loaded here based on navigation -->
+            <div class="content-placeholder">
+                <h2>Welcome to Your Profile</h2>
+                <p>Select an option from the sidebar to get started.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deactivate Account Modal -->
+    <div id="deactivateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Deactivate Account</h3>
+                <span class="close" onclick="closeDeactivateModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    <p><strong>Warning:</strong> This action will deactivate your account.</p>
+                    <ul>
+                        <li>You will be logged out immediately</li>
+                        <li>You cannot access your account while deactivated</li>
+                        <li>Your account will be automatically reactivated when you log in again</li>
+                        <li>This is different from being blocked (which requires admin intervention)</li>
+                    </ul>
+                </div>
+                <form id="deactivateForm">
+                    <div class="form-group">
+                        <label for="deactivateReason">Reason for deactivation (optional):</label>
+                        <textarea id="deactivateReason" name="reason" rows="3" placeholder="Enter your reason for deactivating..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-cancel" onclick="closeDeactivateModal()">Cancel</button>
+                        <button type="submit" class="btn btn-deactivate">Deactivate Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load user data when page loads
+        window.addEventListener('load', async () => {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Set email in navbar (like the image shows)
+            document.getElementById('userEmail').textContent = userData.email || 'it.helpdesk@hungerstationbfc.com';
+            
+            // Set username in sidebar (prefer first + last, then name, then fallback)
+            const nameEl = document.querySelector('.user-name-placeholder span');
+            if (nameEl) {
+                const localFirst = userData.f_name || '';
+                const localLast = userData.l_name || '';
+                const localFull = `${localFirst} ${localLast}`.trim();
+                const displayName = localFull || userData.name || 'User Name';
+                nameEl.textContent = displayName;
+            }
+            
+            // Set user avatar in sidebar
+            const imageContainer = document.getElementById('userImageContainer');
+            if (imageContainer) {
+                const img = document.createElement('img');
+                const avatarPath = userData.avatar && userData.avatar.trim() !== '' ? userData.avatar : 'uploads/avatar.png';
+                img.src = avatarPath;
+                img.alt = 'User Avatar';
+                img.onerror = function() { this.onerror = null; this.src = 'uploads/avatar.png'; };
+                imageContainer.innerHTML = '';
+                imageContainer.appendChild(img);
+            }
+
+            // Set user status in sidebar
+            const statusElement = document.getElementById('userStatus');
+            if (statusElement) {
+                const status = userData.status || 'activated';
+                statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                statusElement.className = `status-value status-${status}`;
+            }
+
+            // Always fetch latest profile to update avatar and name if they changed
+            try {
+                const response = await fetch('get_user_profile.php');
+                const d = await response.json();
+                
+                if (d.status === 'success' && d.userData) {
+                    const latestAvatar = d.userData.avatar && d.userData.avatar.trim() !== '' ? d.userData.avatar : 'uploads/avatar.png';
+                    const latestFirst = d.userData.f_name || '';
+                    const latestLast = d.userData.l_name || '';
+                    const latestFull = `${latestFirst} ${latestLast}`.trim();
+                    const nameChanged = latestFirst !== (userData.f_name || '') || latestLast !== (userData.l_name || '');
+
+                    // Update avatar UI + localStorage if changed
+                    if (latestAvatar !== (userData.avatar || '')) {
+                        const imgEl = document.querySelector('#userImageContainer img');
+                        if (imgEl) {
+                            const bust = Date.now();
+                            imgEl.src = latestAvatar + (latestAvatar.includes('?') ? `&ts=${bust}` : `?ts=${bust}`);
+                        }
+                    }
+
+                    // Update name UI if changed
+                    if (nameChanged) {
+                        const nameEl2 = document.querySelector('.user-name-placeholder span');
+                        if (nameEl2) nameEl2.textContent = latestFull || nameEl2.textContent;
+                    }
+
+                    // Update email in navbar if changed
+                    if (d.userData.email && d.userData.email !== userData.email) {
+                        document.getElementById('userEmail').textContent = d.userData.email;
+                    }
+
+                    // Persist updated fields to localStorage
+                    const updatedLS = {
+                        ...userData,
+                        avatar: latestAvatar,
+                        f_name: latestFirst || userData.f_name,
+                        l_name: latestLast || userData.l_name,
+                        name: latestFull || userData.name,
+                        status: d.userData.status || userData.status,
+                        email: d.userData.email || userData.email
+                    };
+                    localStorage.setItem('userData', JSON.stringify(updatedLS));
+                }
+            } catch (error) {
+                console.error('Error fetching latest user profile:', error);
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('userData');
+            fetch('logout.php')
+                .finally(() => {
+                    window.location.href = 'index.html';
+                });
+        }
+
+        // Deactivate account functions
+        function showDeactivateModal() {
+            document.getElementById('deactivateModal').style.display = 'block';
+        }
+
+        function closeDeactivateModal() {
+            document.getElementById('deactivateModal').style.display = 'none';
+            document.getElementById('deactivateForm').reset();
+        }
+
+        // Handle deactivate form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const deactivateForm = document.getElementById('deactivateForm');
+            if (deactivateForm) {
+                deactivateForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const reason = document.getElementById('deactivateReason').value;
+                    
+                    if (confirm('Are you sure you want to deactivate your account? This action cannot be undone immediately.')) {
+                        // Deactivate account
+                        const formData = new FormData();
+                        formData.append('reason', reason);
+                        
+                        fetch('deactivate_account.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert(data.message);
+                                // Redirect to login page
+                                window.location.href = 'index.html';
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error deactivating account');
+                        });
+                    }
+                });
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('deactivateModal');
+            if (event.target === modal) {
+                closeDeactivateModal();
+            }
+        }
+    </script>
+    <script src="js/user-profile.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/wishlist.js"></script>
+</body>
+</html>

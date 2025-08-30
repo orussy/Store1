@@ -19,6 +19,9 @@ try {
         throw new Exception("Error setting charset utf8mb4: " . $conn->error);
     }
     
+    // Set timezone to ensure consistent datetime handling
+    $conn->query("SET time_zone = '+00:00'");
+    
 } catch (Exception $e) {
     // Log error (in a production environment, you should log to a file instead)
     error_log("Database Connection Error: " . $e->getMessage());

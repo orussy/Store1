@@ -82,3 +82,20 @@ button:hover {
 .signup-btn:hover {
     background-color: #0b7dda;
 }
+
+.forgot-password-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.forgot-password-link a {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.forgot-password-link a:hover {
+    color: #2196F3;
+    text-decoration: underline;
+}
