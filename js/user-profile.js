@@ -45,6 +45,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Function to fetch user addresses from database
+    async function fetchUserAddresses() {
+        try {
+            const response = await fetch('get_user_addresses.php');
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                return data.addresses;
+            } else {
+                console.error('Error fetching addresses:', data.message);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error fetching addresses:', error);
+            return [];
+        }
+    }
+
     // Function to format date
     function formatDate(dateString) {
         if (!dateString) return 'Not provided';
@@ -74,14 +92,52 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'personal':
                 // Fetch user data for personal information
                 const userData = await fetchUserProfileData();
+                const userAddresses = await fetchUserAddresses();
+                
+                console.log('User data:', userData);
+                console.log('User addresses:', userAddresses);
                 
                 if (userData) {
                     const fullName = `${userData.f_name || ''} ${userData.l_name || ''}`.trim() || 'Not provided';
                     const email = userData.email || 'Not provided';
-                    const phone = userData.phone || 'Not provided';
-                    const dateOfBirth = formatDate(userData.date_of_birth);
+                    const phone = userData.phone_no || 'Not provided';
+                    const dateOfBirth = formatDate(userData.birthdate);
                     const gender = userData.gender || 'Not provided';
                     const loyaltyPoints = userData.loyalty_points || 0;
+                    
+                    // Generate addresses HTML
+                    let addressesHTML = '';
+                    if (userAddresses && userAddresses.length > 0) {
+                        addressesHTML = `
+                            <div class="info-item addresses-section">
+                                <label>Addresses:</label>
+                                <div class="addresses-list">
+                                    ${userAddresses.map(address => `
+                                        <div class="address-item">
+                                            <div class="address-header">
+                                                <span class="address-title">${address.title}</span>
+                                                <span class="address-accuracy ${address.location_accuracy}">${address.location_accuracy}</span>
+                                                <span class="address-date">${formatDate(address.created_at)}</span>
+                                            </div>
+                                            <div class="address-details">
+                                                <p>${address.address1}</p>
+                                                ${address.address2 && address.address2.trim() !== '' ? `<p>${address.address2}</p>` : ''}
+                                                <p>${address.city}, ${address.country} ${address.postal_code}</p>
+                                                <p class="coordinates">📍 ${address.latitude}, ${address.longitude}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        addressesHTML = `
+                            <div class="info-item">
+                                <label>Addresses:</label>
+                                <span>No addresses found</span>
+                            </div>
+                        `;
+                    }
                     
                     content = `
                         <div class="section-content">
@@ -115,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <label>Account Created:</label>
                                     <span>${formatDate(userData.created_at)}</span>
                                 </div>
+                                ${addressesHTML}
                             </div>
                         </div>
                     `;
@@ -158,11 +215,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div class="form-row">
                                             <div class="form-group">
                                                 <label for="editPhone">Phone Number</label>
-                                                <input type="tel" id="editPhone" name="phone" value="${settingsUserData.phone || ''}">
+                                                <input type="tel" id="editPhone" name="phone" value="${settingsUserData.phone_no || ''}">
                                             </div>
                                             <div class="form-group">
                                                 <label for="editBirthdate">Date of Birth</label>
-                                                <input type="date" id="editBirthdate" name="birthdate" value="${settingsUserData.date_of_birth || ''}">
+                                                <input type="date" id="editBirthdate" name="birthdate" value="${settingsUserData.birthdate || ''}">
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -234,6 +291,126 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </button>
                                         </div>
                                     </form>
+                                </div>
+
+                                <!-- Address Management Section -->
+                                <div class="settings-section">
+                                    <h3><i class="fas fa-map-marker-alt"></i> Manage Addresses</h3>
+                                    <div class="addresses-management">
+                                        <div class="addresses-list-settings">
+                                            <h4>Your Addresses</h4>
+                                            <div id="addressesListSettings" class="addresses-list">
+                                                <!-- Addresses will be loaded here -->
+                                            </div>
+                                            <button type="button" class="btn btn-secondary" onclick="showAddAddressForm()">
+                                                <i class="fas fa-plus"></i> Add New Address
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Add/Edit Address Form -->
+                                        <div id="addressFormContainer" class="address-form-container" style="display: none;">
+                                            <h4 id="addressFormTitle">Add New Address</h4>
+                                            <form id="addressForm" class="edit-form">
+                                                <input type="hidden" id="addressId" name="address_id">
+                                                <div class="form-row">
+                                                    <div class="form-group">
+                                                        <label for="addressTitle">Address Title *</label>
+                                                        <select id="addressTitle" name="title" required>
+                                                            <option value="">Select Title</option>
+                                                            <option value="Home">Home</option>
+                                                            <option value="Work">Work</option>
+                                                            <option value="Parents">Parents</option>
+                                                            <option value="Vacation">Vacation</option>
+                                                            <option value="Office">Office</option>
+                                                            <option value="Gym">Gym</option>
+                                                            <option value="Friend's House">Friend's House</option>
+                                                            <option value="Delivery Point">Delivery Point</option>
+                                                            <option value="Other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="addressCountry">Country *</label>
+                                                        <select id="addressCountry" name="country" required>
+                                                            <option value="">Select Country</option>
+                                                            <option value="Egypt">Egypt</option>
+                                                            <option value="United States">United States</option>
+                                                            <option value="United Kingdom">United Kingdom</option>
+                                                            <option value="Canada">Canada</option>
+                                                            <option value="Germany">Germany</option>
+                                                            <option value="France">France</option>
+                                                            <option value="Italy">Italy</option>
+                                                            <option value="Spain">Spain</option>
+                                                            <option value="Australia">Australia</option>
+                                                            <option value="Japan">Japan</option>
+                                                            <option value="China">China</option>
+                                                            <option value="India">India</option>
+                                                            <option value="Brazil">Brazil</option>
+                                                            <option value="Mexico">Mexico</option>
+                                                            <option value="South Africa">South Africa</option>
+                                                            <option value="Saudi Arabia">Saudi Arabia</option>
+                                                            <option value="UAE">UAE</option>
+                                                            <option value="Turkey">Turkey</option>
+                                                            <option value="Russia">Russia</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="addressLine1">Address Line 1 *</label>
+                                                    <input type="text" id="addressLine1" name="address1" placeholder="Street address, P.O. box, company name" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="addressLine2">Address Line 2 (Optional)</label>
+                                                    <input type="text" id="addressLine2" name="address2" placeholder="Apartment, suite, unit, building, floor, etc.">
+                                                    <small class="form-help">This field will be automatically cleared when using map location</small>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group">
+                                                        <label for="addressCity">City *</label>
+                                                        <input type="text" id="addressCity" name="city" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="addressPostalCode">Postal Code *</label>
+                                                        <input type="text" id="addressPostalCode" name="postal_code" required>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Map Location Section -->
+                                                <div class="form-group">
+                                                    <label for="mapLocation">Set Location on Map *</label>
+                                                    <div class="map-info">
+                                                        <small class="form-help">
+                                                            <i class="fas fa-info-circle"></i> 
+                                                            Click on the map to set your location. Address fields will be automatically filled based on the selected coordinates.
+                                                        </small>
+                                                    </div>
+                                                    <div class="map-container">
+                                                        <div id="map" class="map-preview"></div>
+                                                        <div class="map-controls">
+                                                            <button type="button" class="btn btn-secondary" onclick="openMapModal()">
+                                                                <i class="fas fa-map"></i> Open Full Map
+                                                            </button>
+                                                            <button type="button" class="btn btn-info" onclick="autoFillFromCurrentLocation()" title="Use current GPS location">
+                                                                <i class="fas fa-crosshairs"></i> Use GPS
+                                                            </button>
+                                                            <span class="coordinates-display">
+                                                                Lat: <span id="selectedLat">Not set</span>, 
+                                                                Lng: <span id="selectedLng">Not set</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-actions">
+                                                    <button type="button" class="btn btn-cancel" onclick="cancelAddressForm()">
+                                                        <i class="fas fa-times"></i> Cancel
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save"></i> Save Address
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Account Deactivation Section -->
@@ -1170,3 +1347,456 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Address Management Functions
+let map, marker;
+let selectedLatitude = null;
+let selectedLongitude = null;
+
+// Load addresses in settings section
+async function loadAddressesInSettings() {
+    const addressesList = document.getElementById('addressesListSettings');
+    if (!addressesList) return;
+    
+    try {
+        const addresses = await fetchUserAddresses();
+        if (addresses && addresses.length > 0) {
+            addressesList.innerHTML = addresses.map(address => `
+                <div class="address-item">
+                    <div class="address-header">
+                        <span class="address-title">${address.title}</span>
+                        <div class="address-actions">
+                            <button type="button" class="btn btn-small btn-primary" onclick="editAddress(${address.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" onclick="deleteAddress(${address.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="address-details">
+                        <p>${address.address1}</p>
+                        ${address.address2 ? `<p>${address.address2}</p>` : ''}
+                        <p>${address.city}, ${address.country} ${address.postal_code}</p>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            addressesList.innerHTML = '<p class="no-addresses">No addresses found. Add your first address!</p>';
+        }
+    } catch (error) {
+        console.error('Error loading addresses:', error);
+        addressesList.innerHTML = '<p class="error-message">Error loading addresses. Please try again.</p>';
+    }
+}
+
+// Show add address form
+function showAddAddressForm() {
+    document.getElementById('addressFormContainer').style.display = 'block';
+    document.getElementById('addressFormTitle').textContent = 'Add New Address';
+    document.getElementById('addressForm').reset();
+    document.getElementById('addressId').value = '';
+    selectedLatitude = null;
+    selectedLongitude = null;
+    updateCoordinatesDisplay();
+    initializeMap();
+}
+
+// Show edit address form
+async function editAddress(addressId) {
+    try {
+        const addresses = await fetchUserAddresses();
+        const address = addresses.find(addr => addr.id == addressId);
+        
+        if (address) {
+            document.getElementById('addressFormContainer').style.display = 'block';
+            document.getElementById('addressFormTitle').textContent = 'Edit Address';
+            document.getElementById('addressId').value = address.id;
+            document.getElementById('addressTitle').value = address.title;
+            document.getElementById('addressCountry').value = address.country;
+            document.getElementById('addressLine1').value = address.address1;
+            document.getElementById('addressLine2').value = address.address2;
+            document.getElementById('addressCity').value = address.city;
+            document.getElementById('addressPostalCode').value = address.postal_code;
+            
+            // Set coordinates if available
+            if (address.latitude && address.longitude) {
+                selectedLatitude = parseFloat(address.latitude);
+                selectedLongitude = parseFloat(address.longitude);
+                updateCoordinatesDisplay();
+                initializeMap();
+            } else {
+                selectedLatitude = null;
+                selectedLongitude = null;
+                updateCoordinatesDisplay();
+                initializeMap();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading address for edit:', error);
+        alert('Error loading address details. Please try again.');
+    }
+}
+
+// Cancel address form
+function cancelAddressForm() {
+    document.getElementById('addressFormContainer').style.display = 'none';
+    document.getElementById('addressForm').reset();
+}
+
+// Initialize map
+function initializeMap() {
+    const mapDiv = document.getElementById('map');
+    if (!mapDiv) return;
+    
+    // Default coordinates (Cairo, Egypt)
+    const defaultLat = selectedLatitude || 30.0444;
+    const defaultLng = selectedLongitude || 31.2357;
+    
+    // Create map using Leaflet (free alternative to Google Maps)
+    if (map) {
+        map.remove();
+    }
+    
+    map = L.map('map').setView([defaultLat, defaultLng], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Add marker if coordinates are set
+    if (selectedLatitude && selectedLongitude) {
+        marker = L.marker([selectedLatitude, selectedLongitude]).addTo(map);
+    }
+    
+    // Add click event to set location
+    map.on('click', function(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+        selectedLatitude = e.latlng.lat;
+        selectedLongitude = e.latlng.lng;
+        updateCoordinatesDisplay();
+        
+        // Auto-fill address fields
+        autoFillAddressFromCoordinates(e.latlng.lat, e.latlng.lng);
+    });
+}
+
+// Update coordinates display
+function updateCoordinatesDisplay() {
+    const latSpan = document.getElementById('selectedLat');
+    const lngSpan = document.getElementById('selectedLng');
+    
+    if (latSpan && lngSpan) {
+        if (selectedLatitude && selectedLongitude) {
+            latSpan.textContent = selectedLatitude.toFixed(6);
+            lngSpan.textContent = selectedLongitude.toFixed(6);
+        } else {
+            latSpan.textContent = 'Not set';
+            lngSpan.textContent = 'Not set';
+        }
+    }
+}
+
+// Open full map modal
+function openMapModal() {
+    // Create modal for full map
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'mapModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px; height: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-map"></i> Set Location on Map</h3>
+                <span class="close" onclick="closeMapModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="height: 500px; padding: 0;">
+                <div id="fullMap" style="width: 100%; height: 100%;"></div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    
+    // Initialize full map
+    setTimeout(() => {
+        const fullMapDiv = document.getElementById('fullMap');
+        const fullMap = L.map('fullMap').setView([selectedLatitude || 30.0444, selectedLongitude || 31.2357], 10);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(fullMap);
+        
+        if (selectedLatitude && selectedLongitude) {
+            L.marker([selectedLatitude, selectedLongitude]).addTo(fullMap);
+        }
+        
+        fullMap.on('click', function(e) {
+            fullMap.eachLayer((layer) => {
+                if (layer instanceof L.Marker) {
+                    fullMap.removeLayer(layer);
+                }
+            });
+            L.marker(e.latlng).addTo(fullMap);
+            selectedLatitude = e.latlng.lat;
+            selectedLongitude = e.latlng.lng;
+            updateCoordinatesDisplay();
+            
+            // Auto-fill address fields
+            autoFillAddressFromCoordinates(e.latlng.lat, e.latlng.lng);
+        });
+    }, 100);
+}
+
+// Close map modal
+function closeMapModal() {
+    const modal = document.getElementById('mapModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Auto-fill address fields from coordinates
+async function autoFillAddressFromCoordinates(lat, lng) {
+    try {
+        // Show loading state
+        const address1Field = document.getElementById('addressLine1');
+        const cityField = document.getElementById('addressCity');
+        const countryField = document.getElementById('addressCountry');
+        const postalCodeField = document.getElementById('addressPostalCode');
+        
+        if (!address1Field || !cityField || !countryField || !postalCodeField) {
+            return;
+        }
+        
+        // Add loading indicator
+        address1Field.placeholder = 'Loading address...';
+        cityField.placeholder = 'Loading city...';
+        countryField.placeholder = 'Loading country...';
+        postalCodeField.placeholder = 'Loading postal code...';
+        
+        // Fetch address data from coordinates
+        const response = await fetch(`reverse_geocode.php?lat=${lat}&lon=${lng}`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            // Fill in the address fields
+            address1Field.value = data.address.address1 || '';
+            cityField.value = data.address.city || '';
+            countryField.value = data.address.country || '';
+            postalCodeField.value = data.address.postal_code || '';
+            
+            // Clear address2 field
+            const address2Field = document.getElementById('addressLine2');
+            if (address2Field) {
+                address2Field.value = '';
+            }
+            
+            // Update country dropdown if it matches
+            if (data.address.country) {
+                const countrySelect = document.getElementById('addressCountry');
+                if (countrySelect) {
+                    for (let option of countrySelect.options) {
+                        if (option.value.toLowerCase() === data.address.country.toLowerCase()) {
+                            option.selected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Show success message
+            showAddressAutoFillMessage('Address auto-filled successfully!', 'success');
+        } else {
+            showAddressAutoFillMessage('Could not auto-fill address. Please enter manually.', 'warning');
+        }
+        
+    } catch (error) {
+        console.error('Error auto-filling address:', error);
+        showAddressAutoFillMessage('Error auto-filling address. Please enter manually.', 'error');
+    } finally {
+        // Reset placeholders
+        const address1Field = document.getElementById('addressLine1');
+        const cityField = document.getElementById('addressCity');
+        const countryField = document.getElementById('addressCountry');
+        const postalCodeField = document.getElementById('addressPostalCode');
+        
+        if (address1Field) address1Field.placeholder = 'Street address, P.O. box, company name';
+        if (cityField) cityField.placeholder = 'City';
+        if (countryField) countryField.placeholder = 'Select Country';
+        if (postalCodeField) postalCodeField.placeholder = 'Postal Code';
+    }
+}
+
+// Auto-fill from current GPS location
+function autoFillFromCurrentLocation() {
+    if (!navigator.geolocation) {
+        showAddressAutoFillMessage('GPS is not supported by your browser.', 'error');
+        return;
+    }
+    
+    showAddressAutoFillMessage('Getting your location...', 'info');
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Set coordinates
+            selectedLatitude = lat;
+            selectedLongitude = lng;
+            updateCoordinatesDisplay();
+            
+            // Update map marker
+            if (map) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker([lat, lng]).addTo(map);
+                map.setView([lat, lng], 15);
+            }
+            
+            // Auto-fill address fields
+            autoFillAddressFromCoordinates(lat, lng);
+        },
+        function(error) {
+            let errorMessage = 'Unable to get your location.';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Location permission denied. Please enable location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Location request timed out.';
+                    break;
+            }
+            showAddressAutoFillMessage(errorMessage, 'error');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+        }
+    );
+}
+
+// Show address auto-fill message
+function showAddressAutoFillMessage(message, type) {
+    // Remove existing message
+    const existingMessage = document.querySelector('.address-auto-fill-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create message element
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `address-auto-fill-message message-${type}`;
+    messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+        ${message}
+    `;
+    
+    // Insert after the map container
+    const mapContainer = document.querySelector('.map-container');
+    if (mapContainer) {
+        mapContainer.parentNode.insertBefore(messageDiv, mapContainer.nextSibling);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 5000);
+    }
+}
+
+// Handle address form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const addressForm = document.getElementById('addressForm');
+    if (addressForm) {
+        addressForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!selectedLatitude || !selectedLongitude) {
+                alert('Please set a location on the map before saving.');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            formData.append('latitude', selectedLatitude);
+            formData.append('longitude', selectedLongitude);
+            
+            try {
+                const response = await fetch('save_address.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert(data.message);
+                    cancelAddressForm();
+                    loadAddressesInSettings();
+                    // Reload addresses in personal info section
+                    if (document.querySelector('.nav-item.active').getAttribute('data-section') === 'personal') {
+                        loadSectionContent('personal');
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error saving address:', error);
+                alert('Error saving address. Please try again.');
+            }
+        });
+    }
+});
+
+// Delete address
+async function deleteAddress(addressId) {
+    if (confirm('Are you sure you want to delete this address?')) {
+        try {
+            const formData = new FormData();
+            formData.append('address_id', addressId);
+            
+            const response = await fetch('delete_address.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                alert(data.message);
+                loadAddressesInSettings();
+                // Reload addresses in personal info section
+                if (document.querySelector('.nav-item.active').getAttribute('data-section') === 'personal') {
+                    loadSectionContent('personal');
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error deleting address:', error);
+            alert('Error deleting address. Please try again.');
+        }
+    }
+}
+
+// Load addresses when settings section is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener for settings section
+    const settingsNav = document.querySelector('.nav-item[data-section="settings"]');
+    if (settingsNav) {
+        settingsNav.addEventListener('click', function() {
+            // Load addresses after a short delay to ensure the section is rendered
+            setTimeout(loadAddressesInSettings, 100);
+        });
+    }
+});
