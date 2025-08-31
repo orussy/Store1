@@ -1,33 +1,6 @@
 // User Profile Page JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all navigation items
-    const navItems = document.querySelectorAll('.nav-item');
-    const mainContent = document.querySelector('.main-content');
-
-    // Load initial section - default to 'personal'
-    loadSectionContent('personal');
-
-    // Add click event listeners to navigation items
-    navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all items
-            navItems.forEach(nav => nav.classList.remove('active'));
-            
-            // Add active class to clicked item
-            this.classList.add('active');
-            
-            // Get the section data attribute
-            const section = this.getAttribute('data-section');
-            
-            // Load content based on section
-            loadSectionContent(section);
-        });
-    });
-
-    // Function to fetch user profile data from database
+// Global functions for fetching data
     async function fetchUserProfileData() {
         try {
             const response = await fetch('get_user_profile.php');
@@ -83,9 +56,94 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to load section content
+// Function to update status display
+async function updateStatusDisplay() {
+    const userData = await fetchUserProfileData();
+    if (userData && userData.status) {
+        const status = userData.status;
+        const statusElement = document.getElementById('currentStatus');
+        const descriptionElement = document.getElementById('statusDescription');
+        
+        if (statusElement) {
+            statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            statusElement.className = `status-badge status-${status}`;
+        }
+        
+        if (descriptionElement) {
+            const descriptions = {
+                'active': 'Your account is fully active and you have access to all features.',
+                'deactivated': 'Your account is temporarily inactive. It will be automatically reactivated when you log in.',
+                'blocked': 'Your account has been blocked. Please contact customer support for assistance.'
+            };
+            descriptionElement.textContent = descriptions[status] || 'Status information not available.';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    const mainContent = document.querySelector('.main-content');
+
+    // Load initial section - default to 'personal'
+    loadSectionContent('personal');
+
+    // Add click event listeners to navigation items
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Get the section data attribute
+            const section = this.getAttribute('data-section');
+            
+            // Load content based on section
+            loadSectionContent(section);
+        });
+    });
+
+
+
+
+
+    // Initialize with default content
+    loadSectionContent('personal');
+    
+    // Add form event listeners when settings section is loaded
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.closest('#editProfileForm')) {
+            const form = e.target.closest('#editProfileForm');
+            if (!form.hasAttribute('data-listener-added')) {
+                form.addEventListener('submit', handleEditProfile);
+                form.setAttribute('data-listener-added', 'true');
+            }
+        }
+        if (e.target && e.target.closest('#changeEmailForm')) {
+            const form = e.target.closest('#changeEmailForm');
+            if (!form.hasAttribute('data-listener-added')) {
+                form.addEventListener('submit', handleChangeEmail);
+                form.setAttribute('data-listener-added', 'true');
+            }
+        }
+        if (e.target && e.target.closest('#changePasswordForm')) {
+            const form = e.target.closest('#changePasswordForm');
+            if (!form.hasAttribute('data-listener-added')) {
+                form.addEventListener('submit', handleChangePassword);
+                form.setAttribute('data-listener-added', 'true');
+            }
+        }
+    });
+});
+
+// Global function to load section content
     async function loadSectionContent(section) {
         console.log('Loading section:', section);
+    const mainContent = document.querySelector('.main-content');
         let content = '';
         
         switch(section) {
@@ -508,66 +566,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
         }
         
+    if (mainContent) {
         mainContent.innerHTML = content;
         
         // If status section is loaded, update the status display
         if (section === 'status') {
             updateStatusDisplay();
         }
-    }
-
-    // Function to update status display
-    async function updateStatusDisplay() {
-        const userData = await fetchUserProfileData();
-        if (userData && userData.status) {
-            const status = userData.status;
-            const statusElement = document.getElementById('currentStatus');
-            const descriptionElement = document.getElementById('statusDescription');
-            
-            if (statusElement) {
-                statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-                statusElement.className = `status-badge status-${status}`;
-            }
-            
-            if (descriptionElement) {
-                const descriptions = {
-                    'active': 'Your account is fully active and you have access to all features.',
-                    'deactivated': 'Your account is temporarily inactive. It will be automatically reactivated when you log in.',
-                    'blocked': 'Your account has been blocked. Please contact customer support for assistance.'
-                };
-                descriptionElement.textContent = descriptions[status] || 'Status information not available.';
-            }
+        
+        // If settings section is loaded, load addresses
+        if (section === 'settings') {
+            setTimeout(loadAddressesInSettings, 100);
         }
     }
-
-    // Initialize with default content
-    loadSectionContent('personal');
-    
-    // Add form event listeners when settings section is loaded
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.closest('#editProfileForm')) {
-            const form = e.target.closest('#editProfileForm');
-            if (!form.hasAttribute('data-listener-added')) {
-                form.addEventListener('submit', handleEditProfile);
-                form.setAttribute('data-listener-added', 'true');
-            }
-        }
-        if (e.target && e.target.closest('#changeEmailForm')) {
-            const form = e.target.closest('#changeEmailForm');
-            if (!form.hasAttribute('data-listener-added')) {
-                form.addEventListener('submit', handleChangeEmail);
-                form.setAttribute('data-listener-added', 'true');
-            }
-        }
-        if (e.target && e.target.closest('#changePasswordForm')) {
-            const form = e.target.closest('#changePasswordForm');
-            if (!form.hasAttribute('data-listener-added')) {
-                form.addEventListener('submit', handleChangePassword);
-                form.setAttribute('data-listener-added', 'true');
-            }
-        }
-    });
-});
+}
 
 // Form handling functions
 async function handleEditProfile(e) {
@@ -1731,6 +1743,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('latitude', selectedLatitude);
             formData.append('longitude', selectedLongitude);
             
+
+            
             try {
                 const response = await fetch('save_address.php', {
                     method: 'POST',
@@ -1748,7 +1762,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         loadSectionContent('personal');
                     }
                 } else {
+                    console.error('Server response:', data);
+                    if (data.debug) {
+                        alert('Error: ' + data.message + '\n\nDebug info: ' + JSON.stringify(data.debug, null, 2));
+                } else {
                     alert('Error: ' + data.message);
+                    }
                 }
             } catch (error) {
                 console.error('Error saving address:', error);
