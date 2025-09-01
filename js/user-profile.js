@@ -3,7 +3,20 @@
 // Global functions for fetching data
     async function fetchUserProfileData() {
         try {
-            const response = await fetch('get_user_profile.php');
+            // Get user data from localStorage
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData || !userData.id) {
+                console.error('User data not found in localStorage');
+                return null;
+            }
+            
+            const formData = new FormData();
+            formData.append('user_id', userData.id);
+            
+            const response = await fetch('get_user_profile.php', {
+                method: 'POST',
+                body: formData
+            });
             const data = await response.json();
             
             if (data.status === 'success') {
@@ -21,7 +34,20 @@
     // Function to fetch user addresses from database
     async function fetchUserAddresses() {
         try {
-            const response = await fetch('get_user_addresses.php');
+            // Get user data from localStorage
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData || !userData.id) {
+                console.error('User data not found in localStorage');
+                return [];
+            }
+            
+            const formData = new FormData();
+            formData.append('user_id', userData.id);
+            
+            const response = await fetch('get_user_addresses.php', {
+                method: 'POST',
+                body: formData
+            });
             const data = await response.json();
             
             if (data.status === 'success') {
@@ -81,6 +107,19 @@ async function updateStatusDisplay() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOM LOADED ===');
+    
+    // Check if user is logged in
+    const userData = JSON.parse(localStorage.getItem('userData') || 'null');
+    console.log('User data from localStorage:', userData);
+    
+    if (!userData || !userData.id) {
+        console.error('❌ No user data found in localStorage!');
+        console.log('localStorage contents:', localStorage);
+    } else {
+        console.log('✅ User authenticated with ID:', userData.id);
+    }
+    
     // Get all navigation items
     const navItems = document.querySelectorAll('.nav-item');
     const mainContent = document.querySelector('.main-content');
@@ -143,17 +182,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // Global function to load section content
     async function loadSectionContent(section) {
         console.log('Loading section:', section);
-    const mainContent = document.querySelector('.main-content');
+        const mainContent = document.querySelector('.main-content');
         let content = '';
         
-        switch(section) {
-            case 'personal':
-                // Fetch user data for personal information
-                const userData = await fetchUserProfileData();
-                const userAddresses = await fetchUserAddresses();
-                
-                console.log('User data:', userData);
-                console.log('User addresses:', userAddresses);
+        try {
+            switch(section) {
+                case 'personal':
+                    console.log('=== LOADING PERSONAL INFORMATION ===');
+                    // Fetch user data for personal information
+                    const userData = await fetchUserProfileData();
+                    const userAddresses = await fetchUserAddresses();
+                    
+                    console.log('User data:', userData);
+                    console.log('User addresses:', userAddresses);
                 
                 if (userData) {
                     const fullName = `${userData.f_name || ''} ${userData.l_name || ''}`.trim() || 'Not provided';
@@ -370,6 +411,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <h4 id="addressFormTitle">Add New Address</h4>
                                             <form id="addressForm" class="edit-form">
                                                 <input type="hidden" id="addressId" name="address_id">
+                                                <input type="hidden" id="latitude" name="latitude">
+                                                <input type="hidden" id="longitude" name="longitude">
+                                                <input type="hidden" id="user_id" name="user_id">
                                                 <div class="form-row">
                                                     <div class="form-group">
                                                         <label for="addressTitle">Address Title *</label>
@@ -566,17 +610,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
         }
         
-    if (mainContent) {
-        mainContent.innerHTML = content;
-        
-        // If status section is loaded, update the status display
-        if (section === 'status') {
-            updateStatusDisplay();
-        }
-        
-        // If settings section is loaded, load addresses
+        if (mainContent) {
+            mainContent.innerHTML = content;
+            
+            // If status section is loaded, update the status display
+            if (section === 'status') {
+                updateStatusDisplay();
+            }
+            
+                    // If settings section is loaded, load addresses and attach form listener
         if (section === 'settings') {
-            setTimeout(loadAddressesInSettings, 100);
+            setTimeout(() => {
+                loadAddressesInSettings();
+                // Only attach listener if not already attached
+                if (!document.getElementById('addressForm')?.hasAttribute('data-listener-attached')) {
+                    attachAddressFormListener();
+                }
+            }, 100);
+        }
+        }
+    } catch (error) {
+        console.error('Error loading section content:', error);
+        if (mainContent) {
+            mainContent.innerHTML = `
+                <div class="content-placeholder">
+                    <h2>Error Loading Content</h2>
+                    <p>There was an error loading the requested section. Please try again.</p>
+                    <p class="error-details">${error.message}</p>
+                </div>
+            `;
         }
     }
 }
@@ -1408,10 +1470,15 @@ function showAddAddressForm() {
     document.getElementById('addressFormTitle').textContent = 'Add New Address';
     document.getElementById('addressForm').reset();
     document.getElementById('addressId').value = '';
+    document.getElementById('latitude').value = '';
+    document.getElementById('longitude').value = '';
     selectedLatitude = null;
     selectedLongitude = null;
     updateCoordinatesDisplay();
     initializeMap();
+    
+    // Attach form listener
+    attachAddressFormListener();
 }
 
 // Show edit address form
@@ -1435,14 +1502,21 @@ async function editAddress(addressId) {
             if (address.latitude && address.longitude) {
                 selectedLatitude = parseFloat(address.latitude);
                 selectedLongitude = parseFloat(address.longitude);
+                document.getElementById('latitude').value = selectedLatitude;
+                document.getElementById('longitude').value = selectedLongitude;
                 updateCoordinatesDisplay();
                 initializeMap();
             } else {
                 selectedLatitude = null;
                 selectedLongitude = null;
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
                 updateCoordinatesDisplay();
                 initializeMap();
             }
+            
+            // Attach form listener
+            attachAddressFormListener();
         }
     } catch (error) {
         console.error('Error loading address for edit:', error);
@@ -1489,6 +1563,11 @@ function initializeMap() {
         marker = L.marker(e.latlng).addTo(map);
         selectedLatitude = e.latlng.lat;
         selectedLongitude = e.latlng.lng;
+        
+        // Update hidden form fields
+        document.getElementById('latitude').value = selectedLatitude;
+        document.getElementById('longitude').value = selectedLongitude;
+        
         updateCoordinatesDisplay();
         
         // Auto-fill address fields
@@ -1727,55 +1806,129 @@ function showAddressAutoFillMessage(message, type) {
     }
 }
 
-// Handle address form submission
-document.addEventListener('DOMContentLoaded', function() {
+// Function to attach address form event listener
+function attachAddressFormListener() {
+    console.log('=== ATTACHING ADDRESS FORM LISTENER ===');
     const addressForm = document.getElementById('addressForm');
+    console.log('Address form element found:', addressForm);
+    
     if (addressForm) {
-        addressForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!selectedLatitude || !selectedLongitude) {
-                alert('Please set a location on the map before saving.');
-                return;
-            }
-            
-            const formData = new FormData(this);
-            formData.append('latitude', selectedLatitude);
-            formData.append('longitude', selectedLongitude);
-            
-
-            
-            try {
-                const response = await fetch('save_address.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    alert(data.message);
-                    cancelAddressForm();
-                    loadAddressesInSettings();
-                    // Reload addresses in personal info section
-                    if (document.querySelector('.nav-item.active').getAttribute('data-section') === 'personal') {
-                        loadSectionContent('personal');
-                    }
-                } else {
-                    console.error('Server response:', data);
-                    if (data.debug) {
-                        alert('Error: ' + data.message + '\n\nDebug info: ' + JSON.stringify(data.debug, null, 2));
-                } else {
-                    alert('Error: ' + data.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Error saving address:', error);
-                alert('Error saving address. Please try again.');
-            }
-        });
+        console.log('Address form found, adding event listener...');
+        
+        // Check if listener is already attached
+        if (addressForm.hasAttribute('data-listener-attached')) {
+            console.log('✅ Listener already attached, skipping...');
+            return true;
+        }
+        
+        // Remove any existing listener first (safety measure)
+        addressForm.removeEventListener('submit', handleAddressFormSubmit);
+        
+        // Add new listener
+        addressForm.addEventListener('submit', handleAddressFormSubmit);
+        
+        // Mark as attached to prevent duplicates
+        addressForm.setAttribute('data-listener-attached', 'true');
+        
+        console.log('✅ Event listener attached successfully');
+        return true;
+    } else {
+        console.log('❌ Address form element NOT found!');
+        console.log('Available elements with "address" in ID:', document.querySelectorAll('[id*="address"]'));
+        console.log('Available forms:', document.querySelectorAll('form'));
+        return false;
     }
-});
+}
+
+// Handle address form submission
+async function handleAddressFormSubmit(e) {
+    e.preventDefault();
+    
+    console.log('=== FORM SUBMISSION STARTED ===');
+    console.log('Form element:', this);
+    console.log('Selected coordinates check:', { lat: selectedLatitude, lng: selectedLongitude });
+    
+    // Prevent multiple submissions
+    if (this.hasAttribute('data-submitting')) {
+        console.log('❌ Form already submitting, ignoring...');
+        return;
+    }
+    
+    // Mark form as submitting
+    this.setAttribute('data-submitting', 'true');
+    
+    if (!selectedLatitude || !selectedLongitude) {
+        alert('Please set a location on the map before saving.');
+        console.log('Form submission blocked - no coordinates selected');
+        this.removeAttribute('data-submitting');
+        return;
+    }
+    
+    console.log('Form validation passed, proceeding with submission...');
+    
+    // Update hidden inputs before FormData
+    document.getElementById('latitude').value = selectedLatitude || '';
+    document.getElementById('longitude').value = selectedLongitude || '';
+    
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData?.id) {
+        document.getElementById('user_id').value = userData.id;
+    }
+    
+    const formData = new FormData(this);
+    
+    // Debug: Log what we're sending
+    console.log('=== USER PROFILE ADDRESS FORM DEBUG ===');
+    console.log('Form data being sent:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+    }
+    console.log('User data from localStorage:', userData);
+    console.log('Selected coordinates:', { lat: selectedLatitude, lng: selectedLongitude });
+    
+    try {
+        console.log('Sending fetch request to save_address.php...');
+        const response = await fetch('save_address.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        console.log('Response received:', response);
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.status === 'success') {
+            // Use console.log instead of alert for debugging
+            console.log('✅ Success:', data.message);
+            // alert(data.message); // Commented out to prevent repeated alerts
+            cancelAddressForm();
+            loadAddressesInSettings();
+            // Reload addresses in personal info section
+            if (document.querySelector('.nav-item.active').getAttribute('data-section') === 'personal') {
+                loadSectionContent('personal');
+            }
+        } else {
+            console.error('Server response:', data);
+            let errorMsg = 'Error: ' + data.message;
+            if (data.debug) {
+                errorMsg += '\n\nDebug info: ' + JSON.stringify(data.debug, null, 2);
+                console.log('Debug info:', data.debug);
+            }
+            console.error('❌ Error:', errorMsg);
+            // alert(errorMsg); // Commented out to prevent repeated alerts
+        }
+    } catch (error) {
+        console.error('Error saving address:', error);
+        console.error('❌ Error saving address. Please try again.');
+        // alert('Error saving address. Please try again.'); // Commented out to prevent repeated alerts
+    } finally {
+        // Always remove the submitting flag
+        this.removeAttribute('data-submitting');
+    }
+}
 
 // Delete address
 async function deleteAddress(addressId) {
@@ -1783,6 +1936,12 @@ async function deleteAddress(addressId) {
         try {
             const formData = new FormData();
             formData.append('address_id', addressId);
+            
+            // Add user_id from localStorage
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData && userData.id) {
+                formData.append('user_id', userData.id);
+            }
             
             const response = await fetch('delete_address.php', {
                 method: 'POST',

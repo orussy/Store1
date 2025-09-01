@@ -4,17 +4,23 @@ header("Content-Type: application/json");
 
 require_once 'config/db.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+// Check if user is logged in via session or POST/GET
+$userId = null;
+if (isset($_SESSION['user_id'])) {
+    $userId = $_SESSION['user_id'];
+} elseif (isset($_POST['user_id']) && !empty($_POST['user_id'])) {
+    $userId = intval($_POST['user_id']);
+} elseif (isset($_GET['user_id']) && !empty($_GET['user_id'])) {
+    $userId = intval($_GET['user_id']);
+}
+
+if (!$userId) {
     echo json_encode([
         "status" => "error",
         "message" => "User not authenticated"
     ]);
     exit();
 }
-
-// Get user ID from session
-$userId = $_SESSION['user_id'];
 
 try {
     // Get user data from users table
@@ -60,8 +66,8 @@ try {
         "email" => $userData['email'],
         "f_name" => $userData['f_name'],
         "l_name" => $userData['l_name'],
-        "phone" => $userData['phone_no'] ?? '',
-        "date_of_birth" => $userData['birthdate'] ?? '',
+        "phone_no" => $userData['phone_no'] ?? '',
+        "birthdate" => $userData['birthdate'] ?? '',
         "gender" => $userData['gender'] ?? '',
         "loyalty_points" => $userData['loyalty_points'] ?? 0,
         "avatar" => ($userData['avatar'] ?? '') ?: 'uploads/avatar.png',

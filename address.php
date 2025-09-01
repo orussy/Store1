@@ -69,6 +69,12 @@
             border-radius: 4px;
             margin: 10px 0;
             display: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
         }
         .success-message {
             color: #155724;
@@ -345,9 +351,13 @@
                 console.log(key + ': ' + value);
             }
             
+            // Also log the currentUser object
+            console.log('Current user data:', currentUser);
+            console.log('Selected coordinates:', { lat: selectedLatitude, lng: selectedLongitude });
+            
             try {
-                console.log('Sending request to save_address.php...');
-                const response = await fetch('save_address.php', {
+                console.log('Sending request to save_address_minimal.php...');
+                const response = await fetch('save_address_minimal.php', {
                     method: 'POST',
                     body: formData
                 });
@@ -373,6 +383,7 @@
                     let errorMsg = data.message;
                     if (data.debug) {
                         errorMsg += '\n\nDebug info: ' + JSON.stringify(data.debug, null, 2);
+                        console.log('Debug info:', data.debug);
                     }
                     showMessage(errorMsg, 'error');
                 }

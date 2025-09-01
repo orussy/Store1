@@ -26,15 +26,8 @@ try {
     // Log error (in a production environment, you should log to a file instead)
     error_log("Database Connection Error: " . $e->getMessage());
     
-    // Return error in JSON format since this file might be included in API endpoints
-    if (strpos($_SERVER['SCRIPT_NAME'], '.php') !== false) {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Database connection failed. Please try again later.'
-        ]);
-        exit;
-    }
+    // Log error only - let the calling script handle output
+    error_log("Database Connection Error: " . $e->getMessage());
     die("Connection failed. Please try again later.");
 }
 ?> 

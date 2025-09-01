@@ -2,13 +2,21 @@
 session_start();
 header('Content-Type: application/json');
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
-    exit();
+// Check if user is logged in via session or POST parameters
+$user_id = null;
+
+if (isset($_SESSION['user_id'])) {
+    // Session-based authentication
+    $user_id = $_SESSION['user_id'];
+} elseif (isset($_POST['user_id']) && !empty($_POST['user_id'])) {
+    // POST-based authentication (for localStorage)
+    $user_id = intval($_POST['user_id']);
 }
 
-$user_id = $_SESSION['user_id'];
+if (!$user_id) {
+    echo json_encode(['status' => 'error', 'message' => 'User not logged in or user ID not provided']);
+    exit();
+}
 
 // Check if address_id is provided
 if (!isset($_POST['address_id']) || empty($_POST['address_id'])) {
