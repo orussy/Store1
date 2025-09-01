@@ -1,19 +1,17 @@
 <?php
-session_start();
 header('Content-Type: application/json');
 
 // Debug: Log all incoming data
 error_log("=== Address Form Debug ===");
 error_log("POST data: " . print_r($_POST, true));
-error_log("Session user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
+// Check if user_id is provided in POST data (for localStorage auth)
+if (!isset($_POST['user_id']) || empty($_POST['user_id'])) {
+    echo json_encode(['status' => 'error', 'message' => 'User ID not provided']);
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = intval($_POST['user_id']);
 
 // Validate required fields including new required coordinates
 $required_fields = ['title', 'address1', 'country', 'city', 'postal_code', 'latitude', 'longitude'];
@@ -38,8 +36,8 @@ if (!empty($missing_fields)) {
 }
 
 // Validate coordinates
-$latitude = $_POST['latitude'];
-$longitude = $_POST['longitude'];
+$latitude = floatval($_POST['latitude']);
+$longitude = floatval($_POST['longitude']);
 if (!is_numeric($latitude) || !is_numeric($longitude)) {
     echo json_encode([
         'status' => 'error', 
@@ -61,10 +59,14 @@ try {
     $title = $_POST['title'];
     $address1 = $_POST['address1'];
     $address2 = $_POST['address2'] ?? null;
+    if ($address2 === null) $address2 = "";
     $country = $_POST['country'];
     $city = $_POST['city'];
     $postal_code = $_POST['postal_code'];
-    $location_accuracy = $_POST['location_accuracy'] ?? 'approximate';
+    $allowed = ['exact','approximate','general'];
+    $location_accuracy = in_array($_POST['location_accuracy'] ?? 'approximate', $allowed)
+    ? $_POST['location_accuracy']
+    : 'approximate';
     $address_id = $_POST['address_id'] ?? null;
     
     error_log("Processing address - ID: " . ($address_id ?: 'NEW') . ", User: $user_id");
