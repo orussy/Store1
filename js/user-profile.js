@@ -178,6 +178,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+// Avatar upload handlers
+function attachAvatarUploadListeners() {
+    const chooseBtn = document.getElementById('chooseAvatarBtn');
+    const fileInput = document.getElementById('avatarFileInput');
+    const form = document.getElementById('avatarUploadForm');
+    const previewImg = document.getElementById('avatarPreviewImg');
+    const uploadBtn = document.getElementById('uploadAvatarBtn');
+
+    if (!form || !fileInput || !chooseBtn || !previewImg || !uploadBtn) return;
+
+    chooseBtn.onclick = function() { fileInput.click(); };
+
+    fileInput.onchange = function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+            showNotification('Only JPG, PNG, or WEBP images are allowed', 'error');
+            fileInput.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('Image is too large (max 5MB)', 'error');
+            fileInput.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            previewImg.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    form.onsubmit = async function(e) {
+        e.preventDefault();
+        if (!fileInput.files || !fileInput.files[0]) {
+            showNotification('Please choose an image first', 'error');
+            return;
+        }
+        const original = uploadBtn.innerHTML;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        uploadBtn.disabled = true;
+        try {
+            const fd = new FormData();
+            fd.append('avatar', fileInput.files[0]);
+            const resp = await fetch('upload_avatar.php', { method: 'POST', body: fd });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                showNotification('Profile picture updated!', 'success');
+                // Update sidebar avatar
+                const imgEl = document.querySelector('#userImageContainer img');
+                if (imgEl && data.avatar) {
+                    imgEl.src = data.avatar;
+                }
+                // Update localStorage
+                const ls = JSON.parse(localStorage.getItem('userData') || 'null');
+                if (ls && data.avatar) {
+                    // strip cache bust for storage
+                    const baseUrl = data.avatar.split('?')[0];
+                    ls.avatar = baseUrl;
+                    localStorage.setItem('userData', JSON.stringify(ls));
+                }
+            } else {
+                showNotification(data.message || 'Failed to update avatar', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showNotification('Error uploading image', 'error');
+        } finally {
+            uploadBtn.innerHTML = original;
+            uploadBtn.disabled = false;
+        }
+    };
+}
+
 
 // Global function to load section content
     async function loadSectionContent(section) {
@@ -297,6 +371,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="section-content">
                             <h2>Account Settings</h2>
                             <div class="settings-container">
+                                <!-- Change Profile Picture Section -->
+                                <div class="settings-section">
+                                    <h3><i class="fas fa-image"></i> Change Profile Picture</h3>
+                                    <form id="avatarUploadForm" class="edit-form" enctype="multipart/form-data">
+                                        <div class="avatar-upload">
+                                            <div class="avatar-preview">
+                                                <img id="avatarPreviewImg" src="${(settingsUserData.avatar && settingsUserData.avatar.trim() !== '' ? settingsUserData.avatar : 'uploads/avatar.png')}" alt="Current Avatar" onerror="this.onerror=null;this.src='uploads/avatar.png';">
+                                            </div>
+                                            <div class="avatar-actions">
+                                                <input type="file" id="avatarFileInput" name="avatar" accept="image/*" style="display:none;" />
+                                                <button type="button" class="btn btn-secondary" id="chooseAvatarBtn"><i class="fas fa-upload"></i> Choose Image</button>
+                                                <button type="submit" class="btn btn-primary" id="uploadAvatarBtn"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+                                            </div>
+                                            <small class="form-help">Allowed: JPG, PNG, WEBP. Max size 5MB.</small>
+                                        </div>
+                                    </form>
+                                </div>
                                 <!-- Edit Profile Section -->
                                 <div class="settings-section">
                                     <h3><i class="fas fa-user-edit"></i> Edit Profile Information</h3>
@@ -626,6 +717,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!document.getElementById('addressForm')?.hasAttribute('data-listener-attached')) {
                     attachAddressFormListener();
                 }
+                // Attach avatar upload listeners
+                attachAvatarUploadListeners();
             }, 100);
         }
         }
