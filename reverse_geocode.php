@@ -24,7 +24,7 @@ try {
     $context = stream_context_create([
         'http' => [
             'method' => 'GET',
-            'header' => 'User-Agent: Store1-Address-System/1.0'
+            'header' => 'User-Agent: Store-Address-System/1.0'
         ]
     ]);
     

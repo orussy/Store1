@@ -136,7 +136,7 @@ try {
                 
                 // Content (same style as registration)
                 $mail->isHTML(true);
-                $mail->Subject = 'Email Address Changed - Store1';
+                $mail->Subject = 'Email Address Changed - Store';
                 $mail->Body = '
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
                     <div style="background-color: #28a745; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">

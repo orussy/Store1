@@ -78,7 +78,8 @@ async function logout() {
     } catch (error) {
         console.error('Logout error:', error);
     } finally {
-        // Clear localStorage; do not force redirect
+        // Clear localStorage and redirect to login page
         localStorage.removeItem('userData');
+        window.location.href = 'index.html';
     }
 } 

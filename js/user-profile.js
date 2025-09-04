@@ -813,6 +813,16 @@ async function handleChangeEmail(e) {
     }
 }
 
+// Function to hash password using SHA-256
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
 async function handleChangePassword(e) {
     e.preventDefault();
     
@@ -823,6 +833,7 @@ async function handleChangePassword(e) {
     // Validate passwords
     const newPassword = formData.get('new_password');
     const confirmPassword = formData.get('confirm_password');
+    const currentPassword = formData.get('current_password');
     
     if (newPassword.length < 8) {
         showNotification('Password must be at least 8 characters long', 'error');
@@ -837,6 +848,14 @@ async function handleChangePassword(e) {
     try {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing Password...';
         submitBtn.disabled = true;
+        
+        // Hash passwords on client side
+        const hashedCurrentPassword = await hashPassword(currentPassword);
+        const hashedNewPassword = await hashPassword(newPassword);
+        
+        // Update form data with hashed passwords
+        formData.set('current_password', hashedCurrentPassword);
+        formData.set('new_password', hashedNewPassword);
         
         const response = await fetch('change_password.php', {
             method: 'POST',

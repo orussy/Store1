@@ -69,24 +69,24 @@ try {
     $mail->Port       = 587;
 
     // Recipients
-    $mail->setFrom('storestop08@gmail.com', 'Store1 Password Reset');
+    $mail->setFrom('storestop08@gmail.com', 'Store Password Reset');
     $mail->addAddress($email, $user['f_name'] . ' ' . $user['l_name']);
 
     // Content
     $mail->isHTML(true);
-    $mail->Subject = 'Password Reset Request - Store1';
+    $mail->Subject = 'Password Reset Request - Store';
     
     // Create reset URL - Simplified for local development
-    $reset_url = "http://localhost/Store1/reset_password.html?token=" . $reset_token;
+    $reset_url = "http://localhost/Store/reset_password.html?token=" . $reset_token;
     
     $mail->Body = '
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: #0d3b5e; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1>Store1 Password Reset</h1>
+            <h1>Store Password Reset</h1>
         </div>
         <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <h2>Hello ' . $user['f_name'] . '!</h2>
-            <p>We received a request to reset your password for your Store1 account.</p>
+            <p>We received a request to reset your password for your Store account.</p>
             
             <p>Click the button below to reset your password:</p>
             

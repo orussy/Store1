@@ -1,12 +1,27 @@
 // NO AUTO-REDIRECT LOGIC - Users must manually log in
 console.log('Login page loaded');
 
+// Function to hash password using SHA-256
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorMessage = document.getElementById('error-message');
     errorMessage.style.display = 'none';
 
     const formData = new FormData(e.target);
+    
+    // Temporarily disable client-side hashing to test
+    // const password = formData.get('password');
+    // const hashedPassword = await hashPassword(password);
+    // formData.set('password', hashedPassword);
 
     try {
         console.log('Sending login request...');

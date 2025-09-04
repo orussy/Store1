@@ -11,7 +11,7 @@ define('SMTP_SECURE', 'tls'); // Security type: 'tls' or 'ssl'
 
 // Email Settings
 define('FROM_EMAIL', 'your-actual-email@gmail.com'); // Replace with your actual email
-define('FROM_NAME', 'Store1'); // From name
+define('FROM_NAME', 'Store'); // From name
 
 // For Gmail users:
 // 1. Enable 2-factor authentication on your Google account

@@ -1,12 +1,26 @@
+// Function to hash password using SHA-256
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
 $(document).ready(function() {
-    $("#regform").submit(function(event) {
+    $("#regform").submit(async function(event) {
         event.preventDefault(); // Prevent default form submission
+        
+        // Hash password on client side
+        const password = $("#password").val();
+        const hashedPassword = await hashPassword(password);
         
         var formData = {
             f_name: $("#f_name").val(),
             l_name: $("#l_name").val(),
             email: $("#email").val(),
-            password: $("#password").val(),
+            password: hashedPassword,
             birthdate: $("#birthdate").val(),
             phone_no: $("#phone_no").val(),
             gender: $("#gender").val()

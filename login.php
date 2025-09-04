@@ -18,7 +18,7 @@ header("Content-Type: application/json");
 
 // Get user input
 $email = $_POST['email'] ?? '';
-$password = $_POST['password'] ?? '';
+$password = $_POST['password'] ?? ''; // This is now SHA-256 hashed from client
 
 // Use prepared statement to prevent SQL injection
 $query = "SELECT * FROM users WHERE email=?";
@@ -41,7 +41,7 @@ if($row){
         exit();
     }
     
-    // Check if password is correct
+    // Check if password is correct (password is plain text from client for backward compatibility)
     if(password_verify($password, $hashpass)){
         // Auto-reactivate deactivated users when they login
         if($row['status'] === 'deactivated'){

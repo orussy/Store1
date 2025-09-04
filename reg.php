@@ -31,6 +31,7 @@ if ($result->num_rows > 0) {
     exit;
 }
 
+// Hash the already SHA-256 hashed password from client with bcrypt
 $hashpass = password_hash($password, PASSWORD_DEFAULT);
 
 // Generate verification code
@@ -89,14 +90,14 @@ try {
         </div>
         <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <h2>Hello ' . $f_name . '!</h2>
-            <p>Thank you for registering with Store1. To complete your registration, please use the verification code below:</p>
+            <p>Thank you for registering with Store. To complete your registration, please use the verification code below:</p>
             
             <div style="background-color: #f0f0f0; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
                 <h1 style="color: #0d3b5e; font-size: 32px; margin: 0; letter-spacing: 5px;">' . $verification_code . '</h1>
             </div>
             
             <p>This code will expire in 10 minutes for security reasons.</p>
-            <p>If you did not create an account with Store1, please ignore this email.</p>
+            <p>If you did not create an account with Store, please ignore this email.</p>
             
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
                 <p>Best regards,<br>The Store Team</p>

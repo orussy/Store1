@@ -30,7 +30,7 @@ if (strlen($password) < 8) {
 }
 
 // Check if token exists and is valid
-$query = "SELECT pr.*, u.email, u.f_name, u.l_name, u.role 
+$query = "SELECT pr.*, u.email, u.f_name, u.l_name, u.role_id 
           FROM password_resets pr 
           JOIN users u ON pr.user_id = u.id 
           WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0";
@@ -48,7 +48,7 @@ if (!$reset_data) {
     exit;
 }
 
-// Hash the new password
+// Hash the new password (received password is SHA-256 hashed from client)
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
 // Start transaction
@@ -94,12 +94,12 @@ try {
         $mail->Port       = 587;
 
         // Recipients
-        $mail->setFrom('storestop08@gmail.com', 'Store1 Password Reset');
+        $mail->setFrom('storestop08@gmail.com', 'Store Password Reset');
         $mail->addAddress($reset_data['email'], $reset_data['f_name'] . ' ' . $reset_data['l_name']);
 
         // Content
         $mail->isHTML(true);
-        $mail->Subject = 'Password Successfully Reset - Store1';
+        $mail->Subject = 'Password Successfully Reset - Store';
         
         $mail->Body = '
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -108,7 +108,7 @@ try {
             </div>
             <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                 <h2>Hello ' . $reset_data['f_name'] . '!</h2>
-                <p>Your password has been successfully reset for your Store1 account.</p>
+                <p>Your password has been successfully reset for your Store account.</p>
                 
                 <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb; margin: 20px 0;">
                     <strong>✅ Password Reset Completed</strong>
