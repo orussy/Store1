@@ -1,5 +1,5 @@
 // NO AUTO-REDIRECT LOGIC - Users must manually log in
-console.log('Login page loaded - NO AUTO-REDIRECT');
+console.log('Login page loaded');
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -12,19 +12,23 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         console.log('Sending login request...');
         const response = await fetch('login.php', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
         const data = await response.json();
         console.log('Login response:', data);
 
         if (data.status === 'success') {
-            console.log('Login successful, storing user data:', data.userData);
-            // Store all user data in localStorage
-            localStorage.setItem('userData', JSON.stringify(data.userData));
-            console.log('User data stored in localStorage');
-
-            // Redirect to dashboard.html
+            // Persist basic user data for fallback validation on next page
+            try { localStorage.setItem('userData', JSON.stringify(data.userData)); } catch (_) {}
+            // After login, verify session on server before redirect
+            const sessionResp = await fetch('get_user_data.php', { credentials: 'include' });
+            if (!sessionResp.ok) {
+                throw new Error('Session not established');
+            }
+            const sessionData = await sessionResp.json();
+            console.log('Session verified:', sessionData);
             window.location.href = data.redirect;
         } else {
             console.log('Login failed:', data.message);
@@ -38,21 +42,16 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Auto-redirect functionality removed - users must manually log in
+// Remove auto-redirect based on localStorage; verify session explicitly instead
 function handleGoogleLogin(response) {
     try {
         console.log('Google response received:', response);
-        
-        // Decode JWT token to get user info
         const responsePayload = decodeJwtResponse(response.credential);
-        console.log('Decoded payload:', responsePayload);
 
-        // Send to your server
         fetch('google_login.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 credential: response.credential,
                 email: responsePayload.email,
@@ -60,19 +59,25 @@ function handleGoogleLogin(response) {
                 sub: responsePayload.sub
             })
         })
-        .then(response => {
-            console.log('Server response status:', response.status);
-            return response.json();
+        .then(async (resp) => {
+            // If server blocked login for blocked status
+            if (!resp.ok) {
+                const txt = await resp.text();
+                let err;
+                try { err = JSON.parse(txt); } catch (_) { err = { message: txt || 'Login failed' }; }
+                throw new Error(err.message || 'Login failed');
+            }
+            return resp.json();
         })
-        .then(data => {
-            console.log('Server response data:', data);
+        .then(async (data) => {
             if (data.status === 'success') {
-                localStorage.setItem('userData', JSON.stringify({
-                    email: data.email,
-                    role: data.role,
-                    id: data.id,
-                    avatar: data.avatar || ''
-                }));
+                // Persist basic user data for fallback validation
+                try { localStorage.setItem('userData', JSON.stringify(data.userData || { email: responsePayload.email })); } catch (_) {}
+                // Verify session before redirect
+                const sessionResp = await fetch('get_user_data.php', { credentials: 'include' });
+                if (!sessionResp.ok) throw new Error('Session not established');
+                const sessionData = await sessionResp.json();
+                console.log('Session verified:', sessionData);
                 window.location.href = 'dashboard.html';
             } else {
                 throw new Error(data.message || 'Login failed');
@@ -103,26 +108,8 @@ function decodeJwtResponse(token) {
         throw new Error('Failed to decode token');
     }
 }
-// Check login status when page loads - AUTO-REDIRECT if already logged in
-console.log('Login page loaded - checking login status...');
 
-// Function to check if user is already logged in
-function checkLoginStatus() {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-        try {
-            const user = JSON.parse(userData);
-            console.log('User already logged in:', user);
-            console.log('Auto-redirecting to dashboard...');
-            window.location.href = 'dashboard.html';
-        } catch (error) {
-            console.error('Error parsing user data:', error);
-            localStorage.removeItem('userData');
-        }
-    } else {
-        console.log('No user data found - user needs to log in');
-    }
-}
-
-// Check login status when page loads
-window.addEventListener('load', checkLoginStatus); 
+// Remove auto-redirect on load; require explicit login
+window.addEventListener('load', () => {
+    console.log('Login page ready - waiting for user action');
+}); 

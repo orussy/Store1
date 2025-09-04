@@ -130,7 +130,7 @@ try {
                 </ul>
                 
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
-                    <p>Best regards,<br>The Store1 Team</p>
+                    <p>Best regards,<br>The Store Team</p>
                 </div>
             </div>
         </div>';

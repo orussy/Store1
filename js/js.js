@@ -1,6 +1,19 @@
 let slideIndex = 0;
         let slides = [];
         
+        // Helper to normalize image URLs and apply fallback
+        function normalizeImageUrl(path) {
+            if (!path) return 'img/product/ultrabook.jpg';
+            if (/^https?:\/\//i.test(path)) return path;
+            if (path.startsWith('/')) return '/Store' + path; // ensure app base
+            return path; // relative to current app directory
+        }
+        function productImgOnError(imgEl) {
+            if (!imgEl) return;
+            imgEl.onerror = null;
+            imgEl.src = 'img/product/ultrabook.jpg';
+        }
+
         // Function to create slides
         function createSlides() {
             const wrapper = document.getElementById('slideshow-wrapper');
@@ -105,28 +118,29 @@ let slideIndex = 0;
                     if (product.discount_type === 'percentage') {
                         priceDisplay = `
                             <div class="price-container">
-                                <span class="original-price">${product.original_price} ${product.Currancy}</span>
+                                <span class="original-price">${product.original_price} ${product.Currency}</span>
                                 <span class="discount-badge">-${product.discount_value}%</span>
-                                <span class="final-price">${product.final_price} ${product.Currancy}</span>
+                                <span class="final-price">${product.final_price} ${product.Currency}</span>
                             </div>
                         `;
                     } else { // fixed amount
                         priceDisplay = `
                             <div class="price-container">
-                                <span class="original-price">${product.original_price} ${product.Currancy}</span>
-                                <span class="discount-badge">-${product.discount_value} ${product.Currancy}</span>
-                                <span class="final-price">${product.final_price} ${product.Currancy}</span>
+                                <span class="original-price">${product.original_price} ${product.Currency}</span>
+                                <span class="discount-badge">-${product.discount_value} ${product.Currency}</span>
+                                <span class="final-price">${product.final_price} ${product.Currency}</span>
                             </div>
                         `;
                     }
                 } else {
-                    priceDisplay = `<p class="product-price">${product.price} ${product.Currancy}</p>`;
+                    priceDisplay = `<p class="product-price">${product.price} ${product.Currency}</p>`;
                 }
 
+                const imageUrl = normalizeImageUrl(product.cover);
                 card.innerHTML = `
                     <div class="image-container">
                         <a href="product-details.html?id=${product.id}">
-                            <img src="${product.cover}" 
+                            <img src="${imageUrl}" onerror="this.onerror=null; this.src='img/product/ultrabook.jpg'" 
                                  alt="${product.name}" 
                                  class="product-image">
                         </a>
@@ -225,9 +239,8 @@ let slideIndex = 0;
             // Check if user is logged in
             const userData = JSON.parse(localStorage.getItem('userData'));
             if (!userData || !userData.email) {
-                console.log('User not logged in, redirecting to login page');
+                console.log('User not logged in; showing toast');
                 showToast('Please login to view your wishlist');
-                window.location.href = 'index.html';
                 return;
             }
             
@@ -284,8 +297,9 @@ let slideIndex = 0;
                 return;
             }
 
-            // Validate session with server
-            fetch('get_user_profile.php')
+            // Validate session with server (pass user_id to avoid relying on cookie)
+            const profileUrl = 'get_user_profile.php' + (userData && userData.id ? ('?user_id=' + encodeURIComponent(userData.id)) : '');
+            fetch(profileUrl)
                 .then(response => response.text().then(text => {
                     let data; try { data = JSON.parse(text); } catch (e) { data = { status: 'error', message: 'Invalid JSON', raw: text }; }
                     return data;
@@ -302,7 +316,7 @@ let slideIndex = 0;
                             localStorage.setItem('userData', JSON.stringify({
                                 id: data.userData.id,
                                 email: data.userData.email,
-                                role: data.userData.role || 'user',
+                                role_id: data.userData.role_id || 7,
                                 avatar: data.userData.avatar || ''
                             }));
                         } catch (e) { console.warn('Failed to sync userData to localStorage:', e); }
@@ -315,7 +329,7 @@ let slideIndex = 0;
                 })
                 .catch(err => {
                     console.error('Error validating session with server:', err);
-                    // On error, be safe and require login
+                    // On error, show login UI without redirect
                     localStorage.removeItem('userData');
                     if (loginSection) loginSection.style.display = 'flex';
                     if (userSection) userSection.style.display = 'none';
@@ -327,11 +341,7 @@ let slideIndex = 0;
             localStorage.removeItem('userData');
             
             // Call logout.php to clear session
-            fetch('logout.php')
-                .finally(() => {
-                    // Redirect to login page
-                    window.location.href = 'index.html';
-                });
+            fetch('logout.php');
         }
 
         // Add wishlist functionality
@@ -351,9 +361,8 @@ let slideIndex = 0;
 
             // Check if user is logged in
             if (!userData || !userData.email) {
-                console.log('User not logged in, redirecting to login...');
+                console.log('User not logged in; showing toast');
                 showToast('Please login to view your wishlist');
-                window.location.href = 'index.html';
                 return;
             }
 
@@ -362,7 +371,6 @@ let slideIndex = 0;
             if (!userId) {
                 console.error('User ID not found in localStorage');
                 showToast('Error: User ID not found. Please log in again.');
-                window.location.href = 'index.html';
                 return;
             }
 
@@ -376,14 +384,14 @@ let slideIndex = 0;
                 return;
             }
 
-            fetch('wishlist.php', {
+            fetch('wishlist_api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({ 
-                    product_id: numericProductId,
-                    user_id: userId
+                    product_id: numericProductId
                 })
             })
             .then(response => {
@@ -401,7 +409,6 @@ let slideIndex = 0;
                     // Check if the error is due to authentication  
                     if (data.message && data.message.includes('Authentication required')) {
                         showToast('Your session has expired. Please log in again.');
-                        window.location.href = 'index.html';
                     } else {
                         showToast(data.message || 'Failed to add product to wishlist');
                     }
@@ -412,7 +419,6 @@ let slideIndex = 0;
                 // Check if the error is due to authentication
                 if (error.message && error.message.includes('Authentication required')) {
                     showToast('Your session has expired. Please log in again.');
-                    window.location.href = 'index.html';
                 } else {
                     showToast('Failed to add product to wishlist: ' + error.message);
                 }
@@ -447,10 +453,13 @@ let slideIndex = 0;
             showLoading();
             
             // Fetch wishlist data from the server
-            const url = `wishlist.php?user_id=${userId}`;
+            const url = `wishlist_api.php`;
             console.log('Fetching wishlist data from URL:', url);
             
-            fetch(url)
+            fetch(url, {
+                method: 'GET',
+                credentials: 'include'
+            })
                 .then(response => {
                     console.log('Response status:', response.status);
                     return response.text().then(text => {
@@ -481,22 +490,22 @@ let slideIndex = 0;
                                 if (item.discount_type === 'percentage') {
                                     priceDisplay = `
                                         <div class="price-container">
-                                            <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                                            <span class="original-price">${item.original_price} ${item.Currency}</span>
                                             <span class="discount-badge">-${item.discount_value}%</span>
-                                            <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                            <span class="final-price">${item.final_price} ${item.Currency}</span>
                                         </div>
                                     `;
                                 } else { // fixed amount
                                     priceDisplay = `
                                         <div class="price-container">
-                                            <span class="original-price">${item.original_price} ${item.Currancy}</span>
-                                            <span class="discount-badge">-${item.discount_value} ${item.Currancy}</span>
-                                            <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                            <span class="original-price">${item.original_price} ${item.Currency}</span>
+                                            <span class="discount-badge">-${item.discount_value} ${item.Currency}</span>
+                                            <span class="final-price">${item.final_price} ${item.Currency}</span>
                                         </div>
                                     `;
                                 }
                             } else {
-                                priceDisplay = `<p class="price">${item.price} ${item.Currancy}</p>`;
+                                priceDisplay = `<p class="price">${item.price} ${item.Currency}</p>`;
                             }
                             
                             const wishlistItem = document.createElement('div');
@@ -528,10 +537,6 @@ let slideIndex = 0;
                     // Check if the error is due to authentication
                     if (error.message && error.message.includes('Authentication required')) {
                         wishlistContainer.innerHTML = '<div class="error-message">Please log in to view your wishlist</div>';
-                        // Redirect to login page after a short delay
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 2000);
                     } else {
                         wishlistContainer.innerHTML = '<div class="error-message">Error loading wishlist. Please try again later.</div>';
                     }
@@ -547,7 +552,6 @@ let slideIndex = 0;
             const userData = JSON.parse(localStorage.getItem('userData'));
             if (!userData || !userData.email) {
                 showToast('Please log in to manage your wishlist');
-                window.location.href = 'index.html';
                 return;
             }
 
@@ -556,20 +560,19 @@ let slideIndex = 0;
             if (!userId) {
                 console.error('User ID not found in localStorage');
                 showToast('Error: User ID not found. Please log in again.');
-                window.location.href = 'index.html';
                 return;
             }
 
             console.log('Removing item from wishlist:', wishlistId, 'for user:', userId);
 
-            fetch('wishlist.php', {
+            fetch('wishlist_api.php', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({ 
-                    wishlist_id: wishlistId,
-                    user_id: userId
+                    wishlist_item_id: wishlistId
                 })
             })
             .then(response => {
@@ -586,7 +589,6 @@ let slideIndex = 0;
                     // Check if the error is due to authentication
                     if (data.message && data.message.includes('Authentication required')) {
                         showToast('Your session has expired. Please log in again.');
-                        window.location.href = 'index.html';
                     } else {
                         showToast(data.message || 'Failed to remove item from wishlist');
                     }
@@ -597,7 +599,6 @@ let slideIndex = 0;
                 // Check if the error is due to authentication
                 if (error.message && error.message.includes('Authentication required')) {
                     showToast('Your session has expired. Please log in again.');
-                    window.location.href = 'index.html';
                 } else {
                     showToast('Failed to remove item from wishlist: ' + error.message);
                 }
@@ -632,7 +633,7 @@ let slideIndex = 0;
             if (!productsContainer) return; // Not on this page
             showLoading();
             
-            fetch('get_products.php')
+            fetch('get_product.php')
                 .then(response => {
                     console.log('Received response from server');
                     return response.json();
@@ -642,19 +643,56 @@ let slideIndex = 0;
                     productsContainer.innerHTML = ''; // Clear existing products
                     
                     data.forEach(product => {
+                        // Generate price display with discount
+                        let priceDisplay = '';
+                        if (product.has_discount) {
+                            if (product.discount_type === 'percentage') {
+                                priceDisplay = `
+                                    <div class="price-container">
+                                        <span class="original-price">${product.original_price} ${product.Currency}</span>
+                                        <span class="discount-badge">-${product.discount_value}%</span>
+                                        <span class="final-price">${product.final_price} ${product.Currency}</span>
+                                    </div>
+                                `;
+                            } else { // fixed amount
+                                priceDisplay = `
+                                    <div class="price-container">
+                                        <span class="original-price">${product.original_price} ${product.Currency}</span>
+                                        <span class="discount-badge">-${product.discount_value} ${product.Currency}</span>
+                                        <span class="final-price">${product.final_price} ${product.Currency}</span>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            priceDisplay = `<p class="product-price">${product.price} ${product.Currency}</p>`;
+                        }
+
                         const productCard = document.createElement('div');
                         productCard.className = 'product-card';
                         productCard.innerHTML = `
-                            <img src="${product.cover}" alt="${product.name}">
-                            <h3>${product.name}</h3>
-                            <p class="price">$${product.price}</p>
-                            <div class="product-actions">
-                                <button onclick="addToCart(${product.id})" class="add-to-cart">
-                                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                            <div class="image-container">
+                                <a href="product-details.html?id=${product.id}">
+                                    <img src="${product.cover}" 
+                                         alt="${product.name}" 
+                                         class="product-image">
+                                </a>
+                            </div>
+                            <a href="product-details.html?id=${product.id}" class="product-name"><h3 class="product-name">${product.name}</h3></a>
+                            ${priceDisplay}
+                            <div class="product-buttons">
+                                <button onclick="addToWishlist(${product.id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist">
+                                    <i class="fa-solid fa-heart" aria-hidden="true"></i>
                                 </button>
-                                <button onclick="addToWishlist(${product.id})" class="wishlist-btn" data-product-id="${product.id}">
-                                    <i class="fa-solid fa-heart"></i>
+                                <button onclick="addToCart({
+                                    id: '${product.id}',
+                                    name: '${product.name}',
+                                    price: ${parseFloat(product.has_discount ? product.final_price : product.price)},
+                                    image: '${product.cover}'
+                                })" class="add-to-cart" ${product.quantity <= 0 ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                    ${product.quantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
                                 </button>
+                                <div id="toast" class="toast-message"></div>
                             </div>
                         `;
                         productsContainer.appendChild(productCard);

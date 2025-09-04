@@ -28,15 +28,15 @@ function addToCart(product) {
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (!userData || !userData.email) {
         showToast('Please login to add items to cart');
-        window.location.href = 'index.html';
         return;
     }
 
-    fetch('cart.php', {
+    fetch('cart_api.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
             product_id: product.id,
             quantity: 1
@@ -46,7 +46,8 @@ function addToCart(product) {
     .then(data => {
         if (data.status === 'success') {
             cart = data;
-            updateCartDisplay();
+            updateCartDisplay('cartItems');
+            updateCartDisplay('cartDropdownItems');
             showToast('Product added to cart!');
         } else {
             showToast(data.message || 'Failed to add product to cart');
@@ -59,11 +60,12 @@ function addToCart(product) {
 }
 
 function removeFromCart(cartItemId) {
-    fetch('cart.php', {
+    fetch('cart_api.php', {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
             cart_item_id: cartItemId
         })
@@ -72,7 +74,8 @@ function removeFromCart(cartItemId) {
     .then(data => {
         if (data.status === 'success') {
             cart = data;
-            updateCartDisplay();
+            updateCartDisplay('cartItems');
+            updateCartDisplay('cartDropdownItems');
             showToast('Product removed from cart!');
         } else {
             showToast(data.message || 'Failed to remove product from cart');
@@ -85,11 +88,12 @@ function removeFromCart(cartItemId) {
 }
 
 function updateCartItemQuantity(cartItemId, quantity) {
-    fetch('cart.php', {
+    fetch('cart_api.php', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
             cart_item_id: cartItemId,
             quantity: quantity
@@ -99,7 +103,8 @@ function updateCartItemQuantity(cartItemId, quantity) {
     .then(data => {
         if (data.status === 'success') {
             cart = data;
-            updateCartDisplay();
+            updateCartDisplay('cartItems');
+            updateCartDisplay('cartDropdownItems');
         } else {
             showToast(data.message || 'Failed to update cart');
         }
@@ -111,7 +116,9 @@ function updateCartItemQuantity(cartItemId, quantity) {
 }
 
 function loadCart(targetId = 'cartItems') {
-    fetch('cart.php')
+    fetch('cart_api.php', {
+        credentials: 'include'
+    })
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
@@ -134,30 +141,31 @@ function updateCartDisplay(targetId = 'cartItems') {
         cartItems.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
         return;
     }
-    const totalCurrency = cart.items[0]?.Currancy || '';
+    const totalCurrency = cart.items[0]?.Currency || cart.items[0]?.currency_code || cart.items[0]?.currency || 'EGP';
     cartItems.innerHTML = cart.items.map(item => {
+
         // Generate price display with discount
         let priceDisplay = '';
         if (item.has_discount) {
             if (item.discount_type === 'percentage') {
                 priceDisplay = `
                     <div class="price-container">
-                        <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                        <span class="original-price">${item.original_price} ${item.Currency || item.currency_code || item.currency || 'EGP'}</span>
                         <span class="discount-badge">-${item.discount_value}%</span>
-                        <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                        <span class="final-price">${item.final_price} ${item.Currency || item.currency_code || item.currency || 'EGP'}</span>
                     </div>
                 `;
             } else { // fixed amount
                 priceDisplay = `
                     <div class="price-container">
-                        <span class="original-price">${item.original_price} ${item.Currancy}</span>
-                        <span class="discount-badge">-${item.discount_value} ${item.Currancy}</span>
-                        <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                        <span class="original-price">${item.original_price} ${item.Currency || item.currency_code || item.currency || 'EGP'}</span>
+                        <span class="discount-badge">-${item.discount_value} ${item.Currency || item.currency_code || item.currency || 'EGP'}</span>
+                        <span class="final-price">${item.final_price} ${item.Currency || item.currency_code || item.currency || 'EGP'}</span>
                     </div>
                 `;
             }
         } else {
-            priceDisplay = `<div class="price">${item.price} ${item.Currancy}</div>`;
+            priceDisplay = `<div class="price">${item.price} ${item.Currency || item.currency_code || item.currency || 'EGP'}</div>`;
         }
         
         return `
@@ -171,7 +179,7 @@ function updateCartDisplay(targetId = 'cartItems') {
                         <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">+</button>
                     </div>
                     ${priceDisplay}
-                    <div class="item-total">Total: ${(parseFloat(item.has_discount ? item.final_price : item.price) * item.quantity).toFixed(2)} ${item.Currancy}</div>
+                    <div class="item-total">Total: ${(parseFloat(item.has_discount ? item.final_price : item.price) * item.quantity).toFixed(2)} ${item.Currency || item.currency_code || item.currency || 'EGP'}</div>
                 </div>
                 <button class="remove-cart" onclick="removeFromCart(${item.id})">
                     <i class="fas fa-trash"></i>

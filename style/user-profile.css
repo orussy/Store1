@@ -56,6 +56,8 @@ body {
     height: 25px !important;
     cursor: pointer;
     transition: filter 0.3s ease;
+    vertical-align: middle;
+    display: inline-block;
     /* Icons will now display in their original black color */
 }
 
@@ -69,6 +71,8 @@ body {
 .navbar .right .nav-link .nav-icon {
     width: 25px !important;
     height: 25px !important;
+    vertical-align: middle;
+    display: inline-block;
     /* Icons will now display in their original black color */
 }
 

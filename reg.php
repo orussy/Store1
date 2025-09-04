@@ -76,16 +76,16 @@ try {
     $mail->Port       = 587;
 
     // Recipients
-    $mail->setFrom('storestop08@gmail.com', 'Store1 Verification');
+    $mail->setFrom('storestop08@gmail.com', 'Store Verification');
     $mail->addAddress($email, $f_name . ' ' . $l_name);
 
     // Content
     $mail->isHTML(true);
-    $mail->Subject = 'Email Verification - Store1';
+    $mail->Subject = 'Email Verification - Store';
     $mail->Body = '
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: #0d3b5e; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1>Store1 Email Verification</h1>
+            <h1>  Verification</h1>
         </div>
         <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <h2>Hello ' . $f_name . '!</h2>
@@ -99,7 +99,7 @@ try {
             <p>If you did not create an account with Store1, please ignore this email.</p>
             
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
-                <p>Best regards,<br>The Store1 Team</p>
+                <p>Best regards,<br>The Store Team</p>
             </div>
         </div>
     </div>';

@@ -1,5 +1,16 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    $cookieParams = session_get_cookie_params();
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => $cookieParams['domain'] ?? '',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
 header("Content-Type: application/json");
 
 require_once 'config/db.php';
@@ -25,7 +36,7 @@ if (!$userId) {
 try {
     // Get user data from users table
     $userQuery = "SELECT id, email, f_name, l_name, phone_no, birthdate, 
-                         role, status, created_at, gender, loyalty_points, avatar
+                         role_id, status, created_at, gender, loyalty_points, avatar
                   FROM users 
                   WHERE id = ? AND deleted_at IS NULL";
     
@@ -76,7 +87,7 @@ try {
         "state" => '', // Not in your database
         "zip_code" => $addressData ? $addressData['postal_code'] : '',
         "country" => $addressData ? $addressData['country'] : '',
-        "role" => $userData['role'] ?? 'user',
+        "role_id" => $userData['role_id'] ?? 7,
         "status" => $userData['status'] ?? 'active',
         "created_at" => $userData['created_at'] ?? ''
     ];

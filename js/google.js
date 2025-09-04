@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const googleData = JSON.parse(localStorage.getItem('googleUserData'));
     
     if (!googleData) {
-        window.location.href = 'index.html';
+        // Do not force redirect; show minimal UI or let page handle
         return;
     }
 

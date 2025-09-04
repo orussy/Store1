@@ -1,12 +1,4 @@
-<?php
-session_start();
 
-// Simple session check - redirect if not logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.html');
-    exit();
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,7 +30,7 @@ if (!isset($_SESSION['user_id'])) {
             <!-- Cart dropdown -->
             <div class="cart-dropdown" id="cartDropdown">
                 <div class="cart-header">
-                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.html">Shopping Cart</a></h3>
+                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.php">Shopping Cart</a></h3>
                 </div>
                 <div id="cartItems"></div>
             </div>
@@ -46,7 +38,7 @@ if (!isset($_SESSION['user_id'])) {
             <!-- Wishlist dropdown -->
             <div class="wishlist-dropdown" id="wishlistDropdown">
                 <div class="wishlist-header">
-                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.html"> My Wishlist</a></h3>
+                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
                 </div>
                 <div id="wishlistItems"></div>
             </div>
@@ -147,15 +139,17 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
+    <script src="js/auth-check.js"></script>
     <script>
         // Load user data when page loads
         window.addEventListener('load', async () => {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            
-            if (!userData) {
-                window.location.href = 'index.html';
-                return;
+            // First check authentication
+            const sessionData = await checkAuth();
+            if (!sessionData) {
+                return; // checkAuth already redirects if no session
             }
+            
+            const userData = JSON.parse(localStorage.getItem('userData'));
 
             // Set email in navbar (like the image shows)
             document.getElementById('userEmail').textContent = userData.email || 'it.helpdesk@hungerstationbfc.com';

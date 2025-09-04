@@ -17,19 +17,22 @@ body {
     align-items: center;
     padding: 10px 20px;
     color: white;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     width: 100%;
     position: fixed;
     z-index: 1000;
     top: 0;
     left: 0;
     right: 0;
+    min-height: 60px;
 }
 .nav-icon {
   width: 20px;
   height: 20px;
   cursor: pointer;
   transition: filter 0.3s ease;
+  vertical-align: middle;
+  display: inline-block;
 }
 
 .nav-link {
@@ -46,6 +49,9 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  height: 100%;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .username-text {
@@ -91,11 +97,29 @@ body {
     flex: 1;
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 .navbar .right img {
     width: 25px;
     height: 25px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+/* Ensure all navigation icons are perfectly aligned */
+.navbar .right img[alt="wishlist"],
+.navbar .right img[alt="Security"],
+.navbar .right img[alt="Cart"],
+.navbar .right img[alt="Night Mode"],
+.navbar .right img[alt="Profile"],
+.navbar .right img[alt="Logout"] {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    vertical-align: baseline;
 }
 .dropbtn2 {
   background-color: transparent;
@@ -366,6 +390,7 @@ img {vertical-align: middle;
   display: flex;
   justify-content: center;
   margin-top: 10px;
+  
 }
 
 .wishlist-btn {
@@ -376,6 +401,7 @@ img {vertical-align: middle;
   transition: all 0.3s;
   font-size: 1.2rem;
   padding: 8px;
+  margin-right: 10px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1031,19 +1057,25 @@ transform: translateY(0);
 }
 @media (max-width: 600px) {
     .navbar {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        text-align: center;
+        text-align: left;
         padding: 10px;
     }
-    .navbar .left, .navbar .right {
-        flex: none;
-        width: 100%;
+    .navbar .left, .navbar .center, .navbar .right {
+        flex: 0 1 auto;
+        width: auto;
         display: flex;
+        align-items: center;
+    }
+    .navbar .center {
+        flex: 1 1 auto;
         justify-content: center;
     }
     .navbar .right {
-        margin-top: 10px;
+        justify-content: flex-end;
+        margin-top: 0;
+        gap: 10px;
     }
 }
 

@@ -5,7 +5,7 @@ require_once 'config/db.php';
 header("Content-Type: application/json");
 
 // Updated SQL query to include discount information
-$query = "SELECT p.*, ps.price, ps.Currancy, ps.quantity, ps.id as sku_id,
+$query = "SELECT p.*, ps.price, ps.Currency, ps.quantity, ps.id as sku_id,
           d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
           FROM products p 
           LEFT JOIN product_skus ps ON p.id = ps.product_id
@@ -44,7 +44,7 @@ while ($row = $result->fetch_assoc()) {
             'category_id' => $row['category_id'],
             'created_at' => $row['created_at'],
             'price' => $row['price'],
-            'Currancy' => $row['Currancy'],
+            'Currency' => $row['Currency'],
             'quantity' => $row['quantity'],
             'sku_id' => $row['sku_id'],
             'discount_type' => $row['discount_type'],

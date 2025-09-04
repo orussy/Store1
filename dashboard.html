@@ -16,6 +16,42 @@
         .cart-header a:hover{
             color: #3d3c3c;
         }
+        /* Ensure navbar icons and user area are on one line */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px;
+            background: #0c3b57;
+        }
+        .navbar .right {
+            display: flex !important;
+            align-items: center !important;
+            gap: 18px;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            padding-left: 0;
+            justify-content: flex-end;
+        }
+        .nav-icon {
+            width: 22px;
+            height: 22px;
+            display: block;
+            cursor: pointer;
+        }
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-email {
+            position: static !important;
+            display: block;
+            line-height: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+        }
     </style>
 
 </head>
@@ -23,23 +59,18 @@
     <div class="navbar">
         <div class="left"><a href="dashboard.html"> <img src="img/store logo with one element on a white background.png" alt=""></a></div>
         <div class="center">
-            <form action="" class="search-bar">
-                <input type="search" name="search" pattern=".*\S.*" required placeholder="Search Here...">
-                <button class="search-btn" type="submit">
-                    <span>Search</span>
-                </button>
-            </form>
+            <i class="fas fa-search search-icon"></i>
         </div>
         <div class="right">
             <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
             <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
             <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
-            <a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
+            <img src="img/phone-solid.svg" alt="Phone" class="nav-icon">
             
             <!-- Cart dropdown -->
             <div class="cart-dropdown" id="cartDropdown">
                 <div class="cart-header">
-                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.html">Shopping Cart</a></h3>
+                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.php">Shopping Cart</a></h3>
                 </div>
                 <div id="cartItems"></div>
             </div>
@@ -47,7 +78,7 @@
             <!-- Wishlist dropdown -->
             <div class="wishlist-dropdown" id="wishlistDropdown">
                 <div class="wishlist-header">
-                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.html"> My Wishlist</a></h3>
+                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
                 </div>
                 <div id="wishlistItems"></div>
             </div>
@@ -62,7 +93,7 @@
                 </div>
             </div>
             
-            <!-- Login/User section -->
+            <!-- Email and User section (same as user-profile) -->
             <div class="user-section">
                 <div id="loginSection" style="display: none;">
                     <a href="index.html" class="nav-link">
@@ -70,7 +101,7 @@
                     </a>
                 </div>
                 <div id="userSection" style="display: none;">
-                    <span id="username" class="username-text"></span>
+                    <span id="userEmail" class="user-email"></span>
                     <a href="user-profile.html" class="nav-link">
                         <img src="img/user-solid.svg" alt="Profile" class="nav-icon">
                     </a>
@@ -99,6 +130,10 @@
     </div>
     <div class="content">
         <div class="container">
+            <!-- Dashboard content will be dynamically inserted here -->
+            <div id="dashboardContent"></div>
+            
+            <!-- Products section -->
             <div id="productsContainer" class="products-grid"></div>
             <div id="pagination" class="pagination"></div>
         </div>
@@ -110,16 +145,18 @@
         </div>
                     </div>
     <footer class="footer">
-        <div class="footer-content"></div>
+        <div class="footer-content">
             <div class="footer-section">
                 <h3>About Us</h3>
                 <p>Welcome to our online store. We offer a wide range of products for your home and office.</p>
             </div>
-            <div class="footer-section">
-        
+        </div>
+    </footer>
 
     <script src="js/js.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/auth-check.js"></script>
 </body>
 </html>

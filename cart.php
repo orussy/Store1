@@ -1,386 +1,133 @@
 <?php
 session_start();
-require_once 'config/db.php';
 
-header('Content-Type: application/json');
-
-// Check if user is logged in
+// Simple session check - redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Authentication required']);
-    exit;
+    header('Location: index.html');
+    exit();
 }
-
-$user_id = $_SESSION['user_id'];
-
-// Get request method
-$method = $_SERVER['REQUEST_METHOD'];
-
-switch ($method) {
-    case 'GET':
-        // Get cart items
-        getCart($conn, $user_id);
-        break;
-    case 'POST':
-        // Add item to cart
-        $data = json_decode(file_get_contents('php://input'), true);
-        addToCart($conn, $user_id, $data);
-        break;
-    case 'PUT':
-        // Update cart item quantity
-        $data = json_decode(file_get_contents('php://input'), true);
-        updateCartItem($conn, $user_id, $data);
-        break;
-    case 'DELETE':
-        // Remove item from cart
-        $data = json_decode(file_get_contents('php://input'), true);
-        removeFromCart($conn, $user_id, $data);
-        break;
-    default:
-        http_response_code(405);
-        echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
-        break;
-}
-
-function getCart($conn, $user_id) {
-    try {
-        // Get or create cart
-        $stmt = $conn->prepare("SELECT id FROM cart WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $cart = $result->fetch_assoc();
-
-        if (!$cart) {
-            // Create new cart
-            $stmt = $conn->prepare("INSERT INTO cart (user_id, total) VALUES (?, 0)");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $cart_id = $conn->insert_id;
-        } else {
-            $cart_id = $cart['id'];
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <style>
+        html, body {
+            height: 100%;
         }
-
-        // Get cart items with product details, price from product_skus, and discount information
-        $stmt = $conn->prepare(
-            "SELECT ci.*, p.name, p.cover, ps.price, ps.Currancy,
-                    d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
-             FROM cart_item ci 
-             JOIN products p ON ci.product_id = p.id 
-             JOIN product_skus ps ON ci.product_sku_id = ps.id 
-             LEFT JOIN discounts d ON p.id = d.product_id 
-             AND d.is_active = 1 
-             AND (d.start_date IS NULL OR d.start_date <= CURDATE())
-             AND (d.end_date IS NULL OR d.end_date >= CURDATE())
-             WHERE ci.cart_id = ?"
-        );
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        $stmt->bind_param("i", $cart_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $items = [];
-        $total = 0;
-        while ($item = $result->fetch_assoc()) {
-            // Calculate final price with discount
-            $originalPrice = floatval($item['price']);
-            $finalPrice = $originalPrice;
-            $hasDiscount = false;
-            
-            if (!empty($item['discount_type']) && !empty($item['discount_value'])) {
-                $discountValue = floatval($item['discount_value']);
-                
-                if ($item['discount_type'] === 'percentage') {
-                    $finalPrice = $originalPrice - ($originalPrice * $discountValue / 100);
-                } else { // fixed amount
-                    $finalPrice = $originalPrice - $discountValue;
-                }
-                
-                // Ensure final price doesn't go below 0
-                $finalPrice = max(0, $finalPrice);
-                $hasDiscount = true;
-            }
-            
-            $item['original_price'] = number_format($originalPrice, 2);
-            $item['final_price'] = number_format($finalPrice, 2);
-            $item['has_discount'] = $hasDiscount;
-            
-            $total += $finalPrice * $item['quantity'];
-            $items[] = $item;
+        .main-content {
+            flex: 1 0 auto;
         }
-
-        // Update cart total
-        $stmt = $conn->prepare("UPDATE cart SET total = ? WHERE id = ?");
-        $stmt->bind_param("di", $total, $cart_id);
-        $stmt->execute();
-
-        echo json_encode([
-            'status' => 'success',
-            'cart_id' => $cart_id,
-            'total' => $total,
-            'items' => $items
-        ]);
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
-    }
-}
-
-function addToCart($conn, $user_id, $data) {
-    try {
-        if (!isset($data['product_id']) || !isset($data['quantity'])) {
-            throw new Exception('Missing required fields');
+        .footer {
+            flex-shrink: 0;
         }
-
-        // Start transaction
-        $conn->begin_transaction();
-
-        try {
-            // Get or create cart
-            $stmt = $conn->prepare("SELECT id FROM cart WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $cart = $result->fetch_assoc();
-
-            if (!$cart) {
-                // Create new cart
-                $stmt = $conn->prepare("INSERT INTO cart (user_id, total) VALUES (?, 0)");
-                if (!$stmt) {
-                    throw new Exception("Prepare failed: " . $conn->error);
-                }
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-                $cart_id = $conn->insert_id;
-            } else {
-                $cart_id = $cart['id'];
-            }
-
-            // Get product SKU price
-            $stmt = $conn->prepare("SELECT id, price FROM product_skus WHERE product_id = ? LIMIT 1");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("i", $data['product_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $sku = $result->fetch_assoc();
-
-            if (!$sku) {
-                throw new Exception('Product SKU not found');
-            }
-
-            // Check if item already exists in cart
-            $stmt = $conn->prepare("SELECT * FROM cart_item WHERE cart_id = ? AND product_id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("ii", $cart_id, $data['product_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $existing_item = $result->fetch_assoc();
-
-            if ($existing_item) {
-                // Update quantity
-                $new_quantity = $existing_item['quantity'] + $data['quantity'];
-                $stmt = $conn->prepare("UPDATE cart_item SET quantity = ? WHERE id = ?");
-                if (!$stmt) {
-                    throw new Exception("Prepare failed: " . $conn->error);
-                }
-                $stmt->bind_param("ii", $new_quantity, $existing_item['id']);
-                $stmt->execute();
-            } else {
-                // Add new item
-                $stmt = $conn->prepare("INSERT INTO cart_item (cart_id, product_id, product_sku_id, quantity) VALUES (?, ?, ?, ?)");
-                if (!$stmt) {
-                    throw new Exception("Prepare failed: " . $conn->error);
-                }
-                $stmt->bind_param("iiii", $cart_id, $data['product_id'], $sku['id'], $data['quantity']);
-                $stmt->execute();
-            }
-
-            // Calculate new total
-            $stmt = $conn->prepare("
-                SELECT SUM(ci.quantity * ps.price) as total 
-                FROM cart_item ci 
-                JOIN product_skus ps ON ci.product_sku_id = ps.id 
-                WHERE ci.cart_id = ?
-            ");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("i", $cart_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $total = $result->fetch_assoc()['total'] ?? 0;
-
-            // Update cart total
-            $stmt = $conn->prepare("UPDATE cart SET total = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("di", $total, $cart_id);
-            $stmt->execute();
-
-            // Commit transaction
-            $conn->commit();
-
-            // Get updated cart
-            getCart($conn, $user_id);
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            throw $e;
+        .cart-header a{
+           text-decoration: none;
+           color: black;
+           transition: 0.3s;
+           
         }
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    }
-}
-
-function updateCartItem($conn, $user_id, $data) {
-    try {
-        if (!isset($data['cart_item_id']) || !isset($data['quantity'])) {
-            throw new Exception('Missing required fields');
+        .cart-header a:hover{
+            color: #3d3c3c;
         }
-
-        // Start transaction
-        $conn->begin_transaction();
-
-        try {
-            // Verify cart ownership and get cart_id
-            $stmt = $conn->prepare("SELECT ci.id, ci.cart_id FROM cart_item ci JOIN cart c ON ci.cart_id = c.id WHERE ci.id = ? AND c.user_id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("ii", $data['cart_item_id'], $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $cart_item = $result->fetch_assoc();
-            
-            if (!$cart_item) {
-                throw new Exception('Cart item not found or unauthorized');
-            }
-
-            // Update quantity
-            $stmt = $conn->prepare("UPDATE cart_item SET quantity = ? WHERE id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("ii", $data['quantity'], $data['cart_item_id']);
-            $stmt->execute();
-
-            // Calculate new total
-            $stmt = $conn->prepare("
-                SELECT SUM(ci.quantity * ps.price) as total 
-                FROM cart_item ci 
-                JOIN product_skus ps ON ci.product_sku_id = ps.id 
-                WHERE ci.cart_id = ?
-            ");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("i", $cart_item['cart_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $total = $result->fetch_assoc()['total'] ?? 0;
-
-            // Update cart total
-            $stmt = $conn->prepare("UPDATE cart SET total = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("di", $total, $cart_item['cart_id']);
-            $stmt->execute();
-
-            // Commit transaction
-            $conn->commit();
-
-            // Get updated cart
-            getCart($conn, $user_id);
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            throw $e;
-        }
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    }
-}
-
-function removeFromCart($conn, $user_id, $data) {
-    try {
-        if (!isset($data['cart_item_id'])) {
-            throw new Exception('Missing cart item ID');
-        }
-
-        // Start transaction
-        $conn->begin_transaction();
-
-        try {
-            // Verify cart ownership and get cart_id
-            $stmt = $conn->prepare("SELECT ci.id, ci.cart_id FROM cart_item ci JOIN cart c ON ci.cart_id = c.id WHERE ci.id = ? AND c.user_id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("ii", $data['cart_item_id'], $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $cart_item = $result->fetch_assoc();
-            
-            if (!$cart_item) {
-                throw new Exception('Cart item not found or unauthorized');
-            }
-
-            // Remove item
-            $stmt = $conn->prepare("DELETE FROM cart_item WHERE id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("i", $data['cart_item_id']);
-            $stmt->execute();
-
-            // Calculate new total
-            $stmt = $conn->prepare("
-                SELECT SUM(ci.quantity * ps.price) as total 
-                FROM cart_item ci 
-                JOIN product_skus ps ON ci.product_sku_id = ps.id 
-                WHERE ci.cart_id = ?
-            ");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("i", $cart_item['cart_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $total = $result->fetch_assoc()['total'] ?? 0;
-
-            // Update cart total
-            $stmt = $conn->prepare("UPDATE cart SET total = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            $stmt->bind_param("di", $total, $cart_item['cart_id']);
-            $stmt->execute();
-
-            // Commit transaction
-            $conn->commit();
-
-            // Get updated cart
-            getCart($conn, $user_id);
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            throw $e;
-        }
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    }
-}
-?> 
+    </style>
+</head>
+<body>
+    <!-- Navbar (copied from dashboard.html) -->
+    <div class="navbar">
+        <div class="left"> <a href="dashboard.html"><img src="img/store logo with one element on a white background.png" alt=""></a></div>
+        <div class="center">
+            <form action="" class="search-bar">
+                <input type="search" name="search" pattern=".*\S.*" required placeholder="Search Here...">
+                <button class="search-btn" type="submit">
+                    <span>Search</span>
+                </button>
+            </form>
+        </div>
+        <div class="right">
+            <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
+            <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
+            <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
+            <a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
+            <!-- Cart dropdown -->
+            <div class="cart-dropdown" id="cartDropdown">
+                <div class="cart-header">
+                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.php">Shopping Cart</a></h3>
+                </div>
+                <!-- This is the dropdown cart, not the main cart page list -->
+                <div id="cartDropdownItems"></div>
+            </div>
+            <!-- Wishlist dropdown -->
+            <div class="wishlist-dropdown" id="wishlistDropdown">
+                <div class="wishlist-header">
+                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
+                </div>
+                <div id="wishlistItems"></div>
+            </div>
+            <!-- Notifications dropdown -->
+            <div class="notifications-dropdown" id="notificationsDropdown">
+                <div class="notifications-header">
+                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                </div>
+                <div id="notificationsItems">
+                    <!-- Notifications will be dynamically inserted here -->
+                </div>
+            </div>
+            <!-- Login/User section -->
+            <div class="user-section">
+                <div id="loginSection" style="display: none;">
+                    <a href="index.html" class="nav-link">
+                        <img src="img/right-to-bracket-solid.svg" alt="Login" class="nav-icon">
+                    </a>
+                </div>
+                <div id="userSection" style="display: none;">
+                    <span id="username" class="username-text"></span>
+                    <a href="#" class="nav-link">
+                        <img src="img/user-solid.svg" alt="Profile" class="nav-icon">
+                    </a>
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <img src="img/right-from-bracket-solid.svg" alt="Logout" class="nav-icon">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="height: 80px;"></div> <!-- Spacer for fixed navbar -->
+    <div class="container main-content">
+        <h2 style="margin-bottom: 30px; color: #0d3b5e;">Your Cart</h2>
+        <div id="cartItems"></div>
+    </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-container">
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Us</h3>
+                <p>Welcome to our online store. We offer a wide range of products for your home and office.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="js/auth-check.js"></script>
+    <script src="js/js.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/notifications.js"></script>
+    <script>
+        // Load cart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart('cartItems');
+        });
+    </script>
+</body>
+</html> 

@@ -1,5 +1,17 @@
 <?php
-session_start();
+// Ensure session cookie works across the whole site and is compatible with modern browsers
+if (session_status() === PHP_SESSION_NONE) {
+    $cookieParams = session_get_cookie_params();
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => $cookieParams['domain'] ?? '',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
 require_once 'config/db.php';
 
 header("Content-Type: application/json");
@@ -45,28 +57,31 @@ if($row){
         }
         
         // Set session variables
+        session_regenerate_id(true);
         $_SESSION['username'] = $row['email'];
-        $_SESSION['role'] = $row['role'] ?? 'user';
+        $_SESSION['role_id'] = $row['role_id'] ?? 7; // Default to customer role
         $_SESSION['user_id'] = $row['id'];
         $_SESSION['user_status'] = $row['status'];
+        // Ensure session is saved before sending response
+        session_write_close();
         
-        // Determine redirect based on user role
+        // Determine redirect based on user role_id
         $redirect = "dashboard.html"; // Default redirect
-        if(($_SESSION['role'] === 'admin')) {
-            $redirect = "admin/admindashboard.php"; // Admin redirect
+        if(in_array($_SESSION['role_id'], [1, 2, 3, 4, 5, 6])) {
+            $redirect = "admin/admindashboard.php"; // Admin redirect for role_id 1-6
         }
         
         // Send all necessary user data and redirect to HTML page
         echo json_encode([
             "status" => "success",
             "username" => $row['email'],
-            "role" => $row['role'] ?? 'user',
+            "role_id" => $row['role_id'] ?? 7,
             "id" => $row['id'],
             "user_status" => $row['status'],
             "redirect" => $redirect,
             "userData" => [
                 "email" => $row['email'],
-                "role" => $row['role'] ?? 'user',
+                "role_id" => $row['role_id'] ?? 7,
                 "name" => $row['f_name']." ".$row['l_name'] ?? '',
                 "id" => $row['id'],
                 "status" => $row['status'],

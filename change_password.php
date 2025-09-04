@@ -147,7 +147,7 @@ try {
                 $mail->Port       = 587;
                 
                 // Recipients
-                $mail->setFrom('storestop08@gmail.com', 'Store1 Verification');
+                $mail->setFrom('storestop08@gmail.com', 'Store Verification');
                 $mail->addAddress($userEmail);
                 
                 // Content (same style as registration)
@@ -165,7 +165,7 @@ try {
                         <p>For security reasons, we recommend using a strong, unique password.</p>
                         
                         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
-                            <p>Best regards,<br>The Store1 Team</p>
+                            <p>Best regards,<br>The Store Team</p>
                         </div>
                     </div>
                 </div>';

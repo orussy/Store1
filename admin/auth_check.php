@@ -1,5 +1,19 @@
 <?php
 session_start();
+require_once '../config/db.php';
+
+// Function to get role name from role_id
+function getRoleName($role_id) {
+    global $conn;
+    $query = "SELECT name FROM roles WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $role_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row['name'] ?? 'Unknown Role';
+}
 
 // Function to check if user is authenticated and is admin
 function isAdmin() {
@@ -8,8 +22,8 @@ function isAdmin() {
         return false;
     }
     
-    // Check if user has admin role (using the same session variable as login.php)
-    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // Check if user has admin role_id (1-6 are admin roles)
+    if (!isset($_SESSION['role_id']) || !in_array($_SESSION['role_id'], [1, 2, 3, 4, 5, 6])) {
         return false;
     }
     
@@ -48,7 +62,8 @@ function getAdminInfo() {
     return [
         'user_id' => $_SESSION['user_id'],
         'email' => $_SESSION['username'], // Using 'username' as set in login.php
-        'role' => $_SESSION['role']
+        'role_id' => $_SESSION['role_id'],
+        'role_name' => getRoleName($_SESSION['role_id'])
     ];
 }
 

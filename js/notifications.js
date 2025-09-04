@@ -9,9 +9,8 @@ function toggleNotifications() {
     // Check if user is logged in
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (!userData || !userData.email) {
-        console.log('User not logged in, redirecting to login page');
+        console.log('User not logged in; showing toast');
         showToast('Please login to view your notifications');
-        window.location.href = 'index.html';
         return;
     }
     
@@ -44,7 +43,7 @@ function loadNotifications() {
     // Show loading state
     notificationsContainer.innerHTML = '<div class="loading">Loading notifications...</div>';
     
-    // Fetch notifications from the server
+    // Fetch notifications from the server (ensure correct base path)
     fetch('get_notifications.php')
         .then(response => {
             if (!response.ok) {

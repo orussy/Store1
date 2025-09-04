@@ -103,7 +103,7 @@
 </head>
 <body>
 	<div class="navbar">
-		<div class="left"> <a href="dashboard.html"><img src="img/store logo with one element on a white background.png" alt=""></a></div>
+		        <div class="left"> <a href="dashboard.html"><img src="img/store logo with one element on a white background.png" alt=""></a></div>
 		<div class="center">
 			<form action="" class="search-bar">
 				<input type="search" name="search" pattern=".*\S.*" required placeholder="Search Here...">
@@ -119,13 +119,13 @@
 			<a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
 			<div class="cart-dropdown" id="cartDropdown">
 				<div class="cart-header">
-					<h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.html">Shopping Cart</a></h3>
+					                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.php">Shopping Cart</a></h3>
 				</div>
 				<div id="cartDropdownItems"></div>
 			</div>
 			<div class="wishlist-dropdown" id="wishlistDropdown">
 				<div class="wishlist-header">
-					<h3><i class="fa-solid fa-heart"></i><a href="wishlist.html"> My Wishlist</a></h3>
+					                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
 				</div>
 				<div id="wishlistItems"></div>
 			</div>
@@ -239,22 +239,22 @@
 					if (product.discount_type === 'percentage') {
 						priceElement.innerHTML = `
 							<div class="price-container">
-								<span class="original-price">${product.original_price} ${product.Currancy}</span>
+								<span class="original-price">${product.original_price} ${product.Currency}</span>
 								<span class="discount-badge">-${product.discount_value}%</span>
-								<span class="final-price">${product.final_price} ${product.Currancy}</span>
+								<span class="final-price">${product.final_price} ${product.Currency}</span>
 							</div>
 						`;
 					} else { // fixed amount
 						priceElement.innerHTML = `
 							<div class="price-container">
-								<span class="original-price">${product.original_price} ${product.Currancy}</span>
-								<span class="discount-badge">-${product.discount_value} ${product.Currancy}</span>
-								<span class="final-price">${product.final_price} ${product.Currancy}</span>
+								<span class="original-price">${product.original_price} ${product.Currency}</span>
+								<span class="discount-badge">-${product.discount_value} ${product.Currency}</span>
+								<span class="final-price">${product.final_price} ${product.Currency}</span>
 							</div>
 						`;
 					}
 				} else {
-					priceElement.textContent = (product.price ? product.price : '') + (product.Currancy ? ' ' + product.Currancy : '');
+					priceElement.textContent = (product.price ? product.price : '') + (product.Currency ? ' ' + product.Currency : '');
 				}
 				
 				document.getElementById('productDescription').textContent = product.description || '';
@@ -409,7 +409,7 @@
 					<div class="product-card" style="min-width:260px; max-width:260px;">
 						<div class="image-container"><a href="product-details.html?id=${p.product_id || p.id}"><img src="${p.cover}" class="product-image" alt="${p.name}"></a></div>
 						<a href="product-details.html?id=${p.product_id || p.id}" class="product-name"><h3 class="product-name">${p.name}</h3></a>
-						<p class="product-price">${p.price || ''} ${p.Currancy || ''}</p>
+						<p class="product-price">${p.price || ''} ${p.Currency || ''}</p>
 						<div class="product-buttons">
 							<button onclick="addToWishlist(${p.product_id || p.id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist"><i class="fa-solid fa-heart" aria-hidden="true"></i></button>
 							<button onclick="addToCart({ id: '${p.product_id || p.id}', name: '${p.name}', price: ${parseFloat(p.price || 0)}, image: '${p.cover}' })" class="add-to-cart"><i class="fa-solid fa-cart-shopping"></i> Add to Cart</button>

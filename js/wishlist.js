@@ -8,7 +8,7 @@ function getUserId() {
         userData = null;
     }
     if (!userData || !userData.id) {
-        window.location.href = 'index.html';
+        // Don't redirect; let the page UI handle unauthenticated state
         return null;
     }
     return userData.id;
@@ -17,7 +17,7 @@ function getUserId() {
 function fetchWishlist() {
     const userId = getUserId();
     if (!userId) return;
-    fetch(`wishlist.php?user_id=${userId}`)
+    fetch('wishlist_api.php', { method: 'GET', credentials: 'include' })
         .then(response => response.json())
         .then(data => {
             const container = document.getElementById('wishlist-container');
@@ -30,22 +30,22 @@ function fetchWishlist() {
                         if (item.discount_type === 'percentage') {
                             priceDisplay = `
                                 <div class="price-container">
-                                    <span class="original-price">${item.original_price} ${item.Currancy}</span>
+                                    <span class="original-price">${item.original_price} ${item.Currency}</span>
                                     <span class="discount-badge">-${item.discount_value}%</span>
-                                    <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                    <span class="final-price">${item.final_price} ${item.Currency}</span>
                                 </div>
                             `;
                         } else { // fixed amount
                             priceDisplay = `
                                 <div class="price-container">
-                                    <span class="original-price">${item.original_price} ${item.Currancy}</span>
-                                    <span class="discount-badge">-${item.discount_value} ${item.Currancy}</span>
-                                    <span class="final-price">${item.final_price} ${item.Currancy}</span>
+                                    <span class="original-price">${item.original_price} ${item.Currency}</span>
+                                    <span class="discount-badge">-${item.discount_value} ${item.Currency}</span>
+                                    <span class="final-price">${item.final_price} ${item.Currency}</span>
                                 </div>
                             `;
                         }
                     } else {
-                        priceDisplay = `<p>Price: ${item.price} ${item.Currancy}</p>`;
+                        priceDisplay = `<p>Price: ${item.price} ${item.Currency}</p>`;
                     }
                     
                     const card = document.createElement('div');
@@ -75,10 +75,11 @@ function fetchWishlist() {
 function removeFromWishlist(wishlistId) {
     const userId = getUserId();
     if (!userId) return;
-    fetch('wishlist.php', {
+    fetch('wishlist_api.php', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, wishlist_id: wishlistId })
+        credentials: 'include',
+        body: JSON.stringify({ wishlist_item_id: wishlistId })
     })
     .then(response => response.json())
     .then(data => {

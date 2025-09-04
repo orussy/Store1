@@ -14,7 +14,7 @@ if (!$id) {
 
 // Fetch product with aggregated price, currency, quantity, and discount information
 $stmt = $connect->prepare("
-    SELECT p.*, MIN(ps.price) AS price, MIN(ps.Currancy) AS Currancy, SUM(ps.quantity) AS total_quantity,
+    SELECT p.*, MIN(ps.price) AS price, MIN(ps.Currency) AS Currency, SUM(ps.quantity) AS total_quantity,
            d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
     FROM products p 
     LEFT JOIN product_skus ps ON p.id = ps.product_id 

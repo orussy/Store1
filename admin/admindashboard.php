@@ -18,7 +18,7 @@ $adminInfo = getAdminInfo();
         <h1>🔐 Admin Dashboard</h1>
         <div class="admin-info">
             Welcome, <strong><?php echo htmlspecialchars($adminInfo['email']); ?></strong> | 
-            Role: <strong><?php echo htmlspecialchars($adminInfo['role']); ?></strong> | 
+            Role: <strong><?php echo htmlspecialchars($adminInfo['role_name']); ?></strong> (ID: <?php echo htmlspecialchars($adminInfo['role_id']); ?>) | 
             User ID: <strong><?php echo htmlspecialchars($adminInfo['user_id']); ?></strong>
         </div>
     </div>
@@ -41,9 +41,12 @@ $adminInfo = getAdminInfo();
             </thead>
             <tbody>
                 <?php
-                include '../config/db.php';
                 
-                $sql = "SELECT id, email, f_name, l_name, role, status FROM users ORDER BY id DESC";
+                
+                $sql = "SELECT u.id, u.email, u.f_name, u.l_name, u.role_id, u.status, r.name as role_name 
+                        FROM users u 
+                        LEFT JOIN roles r ON u.role_id = r.id 
+                        ORDER BY u.id DESC";
                 $result = mysqli_query($conn, $sql);
                 
                 if (mysqli_num_rows($result) > 0) {
@@ -53,10 +56,10 @@ $adminInfo = getAdminInfo();
                         echo "<td>" . htmlspecialchars($row['email']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['f_name']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['l_name']) . "</td>";
-                        echo "<td><span class='role-" . htmlspecialchars($row['role']) . "'>" . htmlspecialchars($row['role']) . "</span></td>";
+                        echo "<td><span class='role-" . htmlspecialchars($row['role_id']) . "'>" . htmlspecialchars($row['role_name'] ?? 'Unknown') . "</span></td>";
                         echo "<td><span class='status-" . htmlspecialchars($row['status']) . "'>" . htmlspecialchars($row['status']) . "</span></td>";
                         echo "<td>";
-                        if ($row['role'] !== 'admin') {
+                        if (!in_array($row['role_id'], [1, 2, 3, 4, 5, 6])) {
                             echo "<button onclick='toggleUserStatus(" . $row['id'] . ", \"" . $row['status'] . "\")' class='action-btn' style='background: " . ($row['status'] === 'active' ? '#dc3545' : '#28a745') . "; color: white;'>" . ($row['status'] === 'active' ? 'Block' : 'Activate') . "</button>";
                         }
                         echo "</td>";

@@ -1,194 +1,169 @@
 <?php
-// Start session to access user authentication data
-session_start();
-require_once 'config/db.php';
+if (session_status() === PHP_SESSION_NONE) {
+    $cookieParams = session_get_cookie_params();
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => $cookieParams['domain'] ?? '',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
 
-// Prevent PHP errors from being displayed in the output
-error_reporting(0);
-ini_set('display_errors', 0);
-
-// Set headers to return JSON
-header('Content-Type: application/json');
-
-// Check if user is logged in
+// Simple session check - show page with client-side guard if not logged in
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Authentication required. Please log in.']);
-    exit();
+    // Do not redirect here to avoid loops; UI will handle login state
 }
-
-// Get the authenticated user's ID
-$authenticated_user_id = $_SESSION['user_id'];
-
-// Get user ID from request
-$user_id = null;
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $user_id = $_GET['user_id'] ?? null;
-    // Debug: Log the user ID
-    error_log("GET request - User ID: " . $user_id);
-} else {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $user_id = $data['user_id'] ?? null;
-    // Debug: Log the user ID
-    error_log("Non-GET request - User ID: " . $user_id);
-}
-
-// Validate user ID
-if (!$user_id) {
-    echo json_encode(['status' => 'error', 'message' => 'User ID is required']);
-    exit();
-}
-
-// Security check: Ensure user can only access their own wishlist
-if ($user_id != $authenticated_user_id) {
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access. You can only access your own wishlist.']);
-    exit();
-}
-
-// Handle different HTTP methods
-switch ($_SERVER['REQUEST_METHOD']) {
-    case 'GET':
-        // Get wishlist items
-        $stmt = $conn->prepare("
-            SELECT w.id, p.id as product_id, p.name, ps.price, ps.Currancy, p.cover,
-                   d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
-            FROM whishlist w 
-            JOIN products p ON w.product_id = p.id 
-            JOIN product_skus ps ON p.id = ps.product_id
-            LEFT JOIN discounts d ON p.id = d.product_id 
-            AND d.is_active = 1 
-            AND (d.start_date IS NULL OR d.start_date <= CURDATE())
-            AND (d.end_date IS NULL OR d.end_date >= CURDATE())
-            WHERE w.user_id = ? AND w.deleted_at IS NULL
-        ");
-        if (!$stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
-            exit();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <title>Wishlist</title>
+    <style>
+        .container{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
         }
-        
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $items = [];
-        while ($row = $result->fetch_assoc()) {
-            // Calculate final price with discount
-            $originalPrice = floatval($row['price']);
-            $finalPrice = $originalPrice;
-            $hasDiscount = false;
-            
-            if (!empty($row['discount_type']) && !empty($row['discount_value'])) {
-                $discountValue = floatval($row['discount_value']);
-                
-                if ($row['discount_type'] === 'percentage') {
-                    $finalPrice = $originalPrice - ($originalPrice * $discountValue / 100);
-                } else { // fixed amount
-                    $finalPrice = $originalPrice - $discountValue;
-                }
-                
-                // Ensure final price doesn't go below 0
-                $finalPrice = max(0, $finalPrice);
-                $hasDiscount = true;
-            }
-            
-            $row['original_price'] = number_format($originalPrice, 2);
-            $row['final_price'] = number_format($finalPrice, 2);
-            $row['has_discount'] = $hasDiscount;
-            
-            $items[] = $row;
+        .wishlist-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            margin-top: 24px;
         }
-        
-        // Debug: Log the number of items found
-        error_log("Found " . count($items) . " items in wishlist for user ID: " . $user_id);
-        
-        echo json_encode([
-            'status' => 'success',
-            'items' => $items
-        ]);
-        break;
-
-    case 'POST':
-        // Add item to wishlist
-        $data = json_decode(file_get_contents('php://input'), true);
-        $product_id = $data['product_id'] ?? null;
-
-        if (!$product_id) {
-            echo json_encode(['status' => 'error', 'message' => 'Product ID is required']);
-            exit();
+        .wishlist-item {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 16px 16px 16px;
+            transition: box-shadow 0.2s;
+            position: relative;
         }
-
-        // Check if item already exists in wishlist
-        $check_stmt = $conn->prepare("
-            SELECT id FROM whishlist 
-            WHERE user_id = ? AND product_id = ? AND deleted_at IS NULL
-        ");
-        if (!$check_stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
-            exit();
+        .wishlist-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.16);
         }
-        
-        $check_stmt->bind_param("ii", $user_id, $product_id);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
-
-        if ($check_result->num_rows > 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Item already in wishlist']);
-            exit();
+        .wishlist-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 16px;
         }
-
-        // Add new item
-        $stmt = $conn->prepare("
-            INSERT INTO whishlist (user_id, product_id, created_at) 
-            VALUES (?, ?, NOW())
-        ");
-        if (!$stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
-            exit();
+        .wishlist-info {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        
-        $stmt->bind_param("ii", $user_id, $product_id);
-        
-        if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'Item added to wishlist']);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Failed to add item to wishlist: ' . $stmt->error]);
+        .wishlist-info h3 {
+            font-size: 1.1rem;
+            margin: 0 0 8px 0;
+            color: #222;
         }
-        break;
-
-    case 'DELETE':
-        // Remove item from wishlist
-        $data = json_decode(file_get_contents('php://input'), true);
-        $wishlist_id = $data['wishlist_id'] ?? null;
-
-        if (!$wishlist_id) {
-            echo json_encode(['status' => 'error', 'message' => 'Wishlist ID is required']);
-            exit();
+        .wishlist-info p {
+            margin: 0 0 12px 0;
+            color: #666;
         }
-
-        // Soft delete by setting deleted_at
-        $stmt = $conn->prepare("
-            UPDATE whishlist 
-            SET deleted_at = NOW() 
-            WHERE id = ? AND user_id = ?
-        ");
-        if (!$stmt) {
-            echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
-            exit();
+        .wishlist-item button {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
         }
-        
-        $stmt->bind_param("ii", $wishlist_id, $user_id);
-        
-        if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'Item removed from wishlist']);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Failed to remove item from wishlist: ' . $stmt->error]);
+        .wishlist-item button:hover {
+            background: #c0392b;
         }
-        break;
-
-    default:
-        echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
-        break;
-}
-
-// Close the database connection
-$conn->close();
-?> 
+        .wishlist-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="left"> <a href="dashboard.html"><img src="img/store logo with one element on a white background.png" alt=""></a></div>
+        <div class="center">
+            <form action="" class="search-bar">
+                <input type="search" name="search" pattern=".*\S.*" required placeholder="Search Here...">
+                <button class="search-btn" type="submit">
+                    <span>Search</span>
+                </button>
+            </form>
+        </div>
+        <div class="right">
+            <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
+            <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
+            <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
+            <a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
+            <!-- Cart dropdown -->
+            <div class="cart-dropdown" id="cartDropdown">
+                <div class="cart-header">
+                    <h3><i class="fa-solid fa-cart-shopping"></i><a href="cart.php">< Shopping Cart</a></h3>
+                </div>
+                <div id="cartItems"></div>
+            </div>
+            <!-- Wishlist dropdown -->
+            <div class="wishlist-dropdown" id="wishlistDropdown">
+                <div class="wishlist-header">
+                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
+                </div>
+                <div id="wishlistItems"></div>
+            </div>
+            <!-- Notifications dropdown -->
+            <div class="notifications-dropdown" id="notificationsDropdown">
+                <div class="notifications-header">
+                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                </div>
+                <div id="notificationsItems">
+                    <!-- Notifications will be dynamically inserted here -->
+                </div>
+            </div>
+            <!-- Login/User section -->
+            <div class="user-section">
+                <div id="loginSection" style="display: none;">
+                    <a href="index.html" class="nav-link">
+                        <img src="img/right-to-bracket-solid.svg" alt="Login" class="nav-icon">
+                    </a>
+                </div>
+                <div id="userSection" style="display: none;">
+                    <span id="username" class="username-text"></span>
+                    <a href="#" class="nav-link">
+                        <img src="img/user-solid.svg" alt="Profile" class="nav-icon">
+                    </a>
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <img src="img/right-from-bracket-solid.svg" alt="Logout" class="nav-icon">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h2>My Wishlist</h2>
+        <div id="wishlist-container" class="wishlist-grid"></div>
+    </div>
+    <script src="js/auth-check.js"></script>
+    <script src="js/wishlist.js"></script>
+    <script src="js/js.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html> 

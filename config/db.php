@@ -26,8 +26,7 @@ try {
     // Log error (in a production environment, you should log to a file instead)
     error_log("Database Connection Error: " . $e->getMessage());
     
-    // Log error only - let the calling script handle output
-    error_log("Database Connection Error: " . $e->getMessage());
-    die("Connection failed. Please try again later.");
+    // Don't output anything - let the calling script handle the error
+    $conn = null;
 }
 ?> 

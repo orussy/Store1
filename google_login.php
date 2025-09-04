@@ -91,23 +91,43 @@ try {
     error_log('Rows found: ' . $result->num_rows);
 
     if ($result->num_rows > 0) {
-        // User exists: LOG IN, do not insert
+        // User exists
         $user = $result->fetch_assoc();
+
+        // Block login for blocked users
+        if (isset($user['status']) && strtolower($user['status']) === 'blocked') {
+            http_response_code(403);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Your account has been blocked. Please contact support."
+            ]);
+            exit();
+        }
+
+        // Set session variables using role_id
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['role'] = $user['role'];
+        $_SESSION['username'] = $user['email'];
+        $_SESSION['role_id'] = $user['role_id'] ?? 7; // Default to customer role
+        $_SESSION['user_status'] = $user['status'] ?? 'active';
+        
         // Optionally update profile info and Google_ID
         $updateStmt = $connect->prepare("UPDATE users SET f_name = ?, l_name = ?, avatar = ?, Google_ID = ? WHERE email = ?");
         if ($updateStmt) {
             $updateStmt->bind_param("sssss", $f_name, $l_name, $file_path, $google_id, $email);
             $updateStmt->execute();
         }
-        // Determine redirect based on user role
-        $redirect = ($user['role'] === 'admin') ? 'admin/admindashboard.php' : 'dashboard.html';
+        
+        // Determine redirect based on user role_id
+        $redirect = "dashboard.html"; // Default redirect
+        if(in_array($_SESSION['role_id'], [1, 2, 3, 4, 5, 6])) {
+            $redirect = "admin/admindashboard.php"; // Admin redirect for role_id 1-6
+        }
+        
         echo json_encode([
             "status" => "success",
             "id" => $user['id'],
             "email" => $user['email'],
-            "role" => $user['role'],
+            "role_id" => $user['role_id'] ?? 7,
             "f_name" => $user['f_name'],
             "l_name" => $user['l_name'],
             "avatar" => $user['avatar'],
@@ -116,27 +136,32 @@ try {
             "message" => "Logged in with Google account"
         ]);
     } else {
-        // 2. If not, create new user
-        $role = 'user';
-        $sql = "INSERT INTO users (Google_ID, email, avatar, role, f_name, l_name) VALUES (?, ?, ?, ?, ?, ?)";
+        // 2. If not, create new user with role_id = 7 (Customer)
+        $role_id = 7; // Customer role
+        $sql = "INSERT INTO users (Google_ID, email, avatar, role_id, f_name, l_name, status) VALUES (?, ?, ?, ?, ?, ?, 'active')";
         $stmt = $connect->prepare($sql);
         if (!$stmt) {
             throw new Exception("Insert prepare failed: " . $connect->error);
         }
-        $stmt->bind_param("ssssss", $google_id, $email, $file_path, $role, $f_name, $l_name);
+        $stmt->bind_param("ssisss", $google_id, $email, $file_path, $role_id, $f_name, $l_name);
         if (!$stmt->execute()) {
             throw new Exception("Insert execute failed: " . $stmt->error);
         }
         $new_user_id = $stmt->insert_id;
+        
+        // Set session variables for new user
         $_SESSION['user_id'] = $new_user_id;
-        $_SESSION['role'] = $role;
+        $_SESSION['username'] = $email;
+        $_SESSION['role_id'] = $role_id;
+        $_SESSION['user_status'] = 'active';
+        
         // New users are always redirected to user dashboard
         $redirect = 'dashboard.html';
         echo json_encode([
             "status" => "success",
             "id" => $new_user_id,
             "email" => $email,
-            "role" => $role,
+            "role_id" => $role_id,
             "f_name" => $f_name,
             "l_name" => $l_name,
             "avatar" => $file_path,
@@ -156,6 +181,5 @@ try {
 
 if (isset($connect)) {
     $connect->close();
-    
 }
 ?> 
