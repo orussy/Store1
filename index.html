@@ -10,6 +10,22 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+    <script>
+    (async function redirectIfLoggedIn() {
+        try {
+            const resp = await fetch('get_user_data.php', { credentials: 'include' });
+            if (!resp.ok) return; // not logged in
+            const data = await resp.json();
+            if (data && data.user_id) {
+                const roleId = Number(data.role_id || 7);
+                const target = [1,2,3,4,5,6].includes(roleId) ? 'admin/admindashboard.php' : 'dashboard.html';
+                window.location.replace(target);
+            }
+        } catch (e) {
+            // ignore
+        }
+    })();
+    </script>
     <div class="login-container">
         <h2>Login</h2>
         <div id="error-message" class="error-message"></div>
