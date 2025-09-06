@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 05, 2025 at 11:49 PM
+-- Generation Time: Sep 06, 2025 at 02:55 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -94,8 +94,6 @@ CREATE TABLE `cart_item` (
 --
 
 INSERT INTO `cart_item` (`id`, `cart_id`, `product_id`, `product_sku_id`, `quantity`, `created_at`, `updated_at`) VALUES
-(4, 12, 1, 66, 1, '2025-09-03 21:32:00', NULL),
-(6, 12, 2, 68, 1, '2025-09-05 13:03:32', NULL),
 (7, 13, 1, 66, 3, '2025-09-05 13:21:22', NULL);
 
 -- --------------------------------------------------------
@@ -138,56 +136,6 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `description`, `created_at`, `deleted_at`) VALUES
-(1, '0Qk2smhi0A0ELPl0rhF7dRIhQbccxZvaBXhcbiPLnu8sIh1tWCq2IN4uxt1eGEnR2wmx28KmaCHxHmDVzPKgHvKp7hwLrpTBMzu24QPiFOYpkjmDkz4zy5eWUs8HKfESZv0oXheTaUZWi2UccztTcBqN8kFGQ5OP7OWiXS4r43bERjKyMRZiiSF1', 'This is a description 0595456', '2009-08-06 00:53:00', NULL),
-(2, '73ryrjhoanQLOuc65Ngymr1TsKrt1iZ6j6RkT7ARg6nwdoE2axSocnuoOGlS3PNTHJNwFF6No0dMWuZvWtpQAJqTPNA7hQohZS1o030ZrKnSK6bfna6bYDlikhT5tWVBZeUu87LgnEu3QZ8jRSkt8QS86zgWPQcJLy2oQD2ZMmiPrPYj0sYzn6WIsJHG7xLbYZpithIfxp1SeHx4RUaSGPgGCQl8EufcHBFHxVBqyDQh2kf5tu3aslgKM2h6', 'This is a description 8595881', '2014-10-16 22:44:00', NULL),
-(3, '3tVl2isO34HGRZKzvXDBPvnRW5g5hOdWfiSon02tQzMPfy53stZRT0JsnJ4RKeBhqIjF6lsYtxU5SV3ySURQ7ZN5b2y4TkdUz3xprhBiMEeSMqjPwWd6fmZCUTIBgM5PbZR', 'This is a description 1232472', '2017-08-28 00:30:00', '2001-05-04 22:21:00'),
-(4, '2GeLPqU5lDFEbPIzEvPICH3RQx4YGAAMDlUSPcbWhKduLLk1vJueQ1gzm', 'This is a description 1239704', '2006-12-17 05:30:00', '2007-06-04 21:36:00'),
-(5, '1loZkMlLevR3jglIcrq3ZrcwdlYg6HwfhawOFMI7SVlNERnT2G10oJyAeMdAm', 'Description number 3302280', '2006-02-04 05:29:00', '2020-07-13 04:13:00'),
-(6, 'AIisIjDpTSBxgbSYVQ3mRUq5ZZJcodR3GLX5dV2xJDSxQbIDP48nNO1VPDJ0bM2iv76pVuuMyQQkoA4Yz6FvNyNklGi5TnMMeKqj4jVbSPkjrQqsWAR', 'This is a description 1160770', '2021-03-30 22:55:00', '2022-01-19 23:22:00'),
-(7, 'oE40I3xnPsJlu6T7c3lvXa7nCjjGO6ivKiFEPmViDE8wu2kcFgCx4HUIzhqApKVNaljtezWIdewHYpxfrkawO7uhrtrrTJf7r8FjBm8RoniRa', 'This is a description 0909709', '2021-04-06 04:10:00', '2020-02-09 22:31:00'),
-(8, 'W5z8QoidNYXHqbDSve0bqlHjW8C7XKfQdGyMdCqoxdqkU3Ro5wkDNtrKOmTpVxegrDyMYViAKeM7lLREv45R', 'Description number 2226261', '2001-05-11 21:54:00', NULL),
-(9, 'KssBhYKwQtIR4Oly85IFzBk0BHKUZYjozyeNGyKWwiGlkLtAbn20pygVUAYhTehmXeTknUvpMh3OXcW6iAs8taOcIrLTwRtQc5BK6H0xGXZ1wp8xMsETjOSYL1xYE5f3AF', 'This is a description 0711305', '2015-02-03 23:38:00', '2023-12-17 02:46:00'),
-(10, 'IWGn1QQNRfaygOgciUwBCh1SE82tWTfeznGETl6X8vqad8LQxSGUZ3rroCUKP1a4XMLE4ePHdqfNKbOzzzRrNLhkRSVmUQNZYlIjnRhC2miwbg7HcTVhcZnvJ0c0ZPdVw', 'This is a description 5283341', '2010-06-22 02:12:00', NULL),
-(11, 'PdSIdN2DzYtVJofaAkXvFpNRR3gMyabm5AF02BIGadw46lCKvDuw0E5VAXyWZaH8g7lDWcJcEfTepHLehHwauGEGS54INQoWyVKBIerVJR52wg0ItJXjY8DO46toxmVl4FGMbz0nKItjcc5cnygk2Solz4rkv3DMwhKZCPXNFDZ7eBHnJmrLUPu40SSwyoPyERrqteM8eOtNwZLxdcOAbMiK5WHEZKI0dcFFgMJtHMxFxLJSwLVm3gfh', 'This is a description 4466637', '2020-07-24 07:01:00', NULL),
-(12, 'ILOwkuHaErUWfdR2vtvpZggXtnCZH2YdiGYMSY5FNy1qO2susITQB6cO5MeDHpygVkuJTMfSEG8OUfMgrTN', 'This is a description 0314253', '2021-02-12 03:16:00', '2010-10-18 04:21:00'),
-(13, 'R2dj8J71oS761YoytDSUCr4jVHE7yIHJFc4kMpUOoCzapW5fwR4xDoH4ndjjEOojW22GxU2t6JjcdePM16sV3ipNmmjgTVcGox8hQ6IEMB0wAW5Hoq7eps5g8D4Eug8Y8f6qVyFLQBmbi460jcFcD6azVQ8dmNV4s2lq', 'Description number 0868662', '2017-12-02 05:39:00', '2015-05-01 01:07:00'),
-(14, '3GPxXPPx0EQTQSRrKPSyO6pHVEc', 'Description number 8855841', '2014-12-29 02:37:00', NULL),
-(15, 'Y0I1cY7yA7twDR1TjYU00QJovAVIZ48RSSOA3Oo3kHCpxwgh3FIveYMnnHpMo6Y6OnH8oSouJIRDSxtkZxSSobdiGo1nOKFbeeLVF6c5oFsV23S0pJfxXUpT1rhjfPjHPEzkAVD8lSr5FP6tz7UBuvR6ia1OnnjUYXLdKfhtoZTmRAdLfSQB8oRdVMWcWzWmwo41xa6', 'This is a description 9915064', '2015-11-24 02:42:00', '2002-10-13 21:50:00'),
-(16, 'XB4PUt6SycO54E6JBqAPTWaeykiXdGAY4wdn3YZppfu0GOMgRgwDu4DwTpx0JlDT7GTPhqiG4eEVbOU58SGRiWmaZWYdEgiWymOLiq24ZnsxguYhXyL8daGMoMnxUUGpmwIWV06WEYHESp5LgJV7XtAaPOAhsIRIax8klGnQTdhGf6Sg0P0s75S5WEFcq7nBOgVJTmmCLBoN8p6Xy4jxBmhGG44OBN6lVZjp62cyOkQzoHwUmqC', 'This is a description 9915697', '2015-07-11 23:41:00', NULL),
-(17, 'oeqKJH5pu7pVI7zsOt7MoYztkueSuTC1THCcyOlTrtXy0Kx3o1edopoESTEf36e0BmprkESwex8T6P7FWqa6kByMJtMFZpda7RX7sVc7L4ujRSCwB6p2XTDRn8cOlRPshye80HTsGTD7JrlJ5pIS66CjE2n64IWckba3T6OtkimUTzon48GUbPrGUVJoAuafoTrlmoPD6cTaEt18kBI3JURHihsC5aybhRWAyEtm0', 'This is a description 2471038', '2015-09-22 06:04:00', '2021-06-19 07:39:00'),
-(18, '4IOQbVeo0iPowdllSQm8TMdhnRSEy1FcV6R3oxJz8j1VNk1EKUlkBdCYu', 'Description number 4773883', '2002-07-22 04:02:00', '2017-09-16 02:10:00'),
-(19, 'DCm1eoB8xuHJc2YSWz7EpiD6MuZEZOGyD02VSowpuAtVeXMvUQEyVZgJypdSVzcS5zlz5OXcdEfZ2OOhuVNQe85Zawdtn1xdYKJYLNhArCLFOmW88xs5xq2No2d7JNtwU1KFJxuM1nnds5pKjxhfarGFNMBfcn4HWwKsOFxwSeo3Qng8knWyeWfNMKLxIcujqFFBtcxqqg83YPy3GWVAmI27Ug0P6wZkdSub8p2S', 'Description number 3101809', '2021-09-18 23:45:00', '2005-08-27 01:37:00'),
-(20, 'Nv2KkyzquCdDIAe7Elbeh4gO155xji7u11QqCOs6dyNC77e1lxoDqNSiwb5Y1enmxDsqR1gLtqLZFxVXMoxIdZFm03cPkG666lNyEaD8OThpictl2n0oBfAY8zE2H0fTwo6ww6oFYHpDKIC1KnRoqaxG8W7Vel3Iz5wrZehCXGOHIg6Auq1CjNvkRh6UyW2jpim1YIwLsKqBWACdvGSLxLMruX1xkGaOcGbFm7s5HunTrSPgcviud', 'Description number 5840539', '2002-05-17 21:52:00', NULL),
-(21, '0uiaogeuXyBMbLXYpa8FklcBqJz4GOT0ErBlRPDqJJy6x3Z7KWpCsVBHzl2kqVS1sl4WFHgYB1opPFf5GTBH1B8eQIsBpef7sSZ4Ppv1X61X8lanyTlwtVz2D322RdwI3ushgH2xwtlXqZYKz8SHRgSowG0F4KFEtdNpSteeVpA0YErL5BmKMHtKE4y12AIrFJ1OJpRutqrT7IWZBp7n5VkWIHHucQiy2GsPT0gSAgoCzSlYtYdg', 'This is a description 2216695', '2007-07-07 05:25:00', '2019-06-02 23:32:00'),
-(22, '2lQTe2thuLG2x4zO7Ygutxj0Frdqnz1wfEGfuayPP8OggFkmvGomVRem8lVJAlX0DBJowNFFnXZnqbkcIvxN5V4eDKEUKWr65kIsBBM8C1JDYa274KGxwZLXo7jJNrLpLDvq8FKDpRIQPuw1LSuJymsu', 'This is a description 1840512', '2015-09-22 00:26:00', '2000-11-24 00:03:00'),
-(23, 'rmqI4MLxJW38cZDTOvpeMoh6h4tprmPV0zOTh6Mb3tnBIcYEmi0ap4l26zrxBHgcMdNigcVJlytWIepxBnNl23zocEZnrzJR6RjBikoNq2sshfCj26qeE6s0UBDGOuhKyGV27VIq', 'Description number 4978536', '2001-07-19 06:32:00', '2001-04-13 07:52:00'),
-(24, 'vs3XdzHGOCMshgbELpj82tLIAqIVjSkyBqhUhuAcR67wAQR1DlMifEikX5WBDBTyWzUpdCSpr0e2CLypTKM7tXnAeBw4cGK4ogG5risfb0jNTv5MOnZLJtTMGGVVpR2p7soQBtpFxsrS6gGqxLDCcIJcDcTCfpNZv5pcEOXEUN3J0LCtUxhJzRFnJP54kohs4PYSyGDJbGRjm2Jwfh', 'Description number 2814238', '2019-07-14 22:02:00', '2017-12-05 04:30:00'),
-(25, 'XlebPdbjLdGB1EciO8wIpAN01GTTK6nkPsQTptwerWQDIRtLN0FNlZzn71uAb4gl2fhxjou6ZtcZxLcDR3tH7bN4zhosrqz20d7ron3xBBTQaCIWss35JyGCyUUeLpCYt', 'Description number 8615200', '2011-07-03 06:13:00', NULL),
-(26, '5HTlpaD3x2UstTKJTyLrV6WSxMaR6ZhMac8faAeBw6GwvQlqYbYCKLxtf2duqMUoHyheKtXS8VGgPRGp0WJvJFhwgIRMkszLGX4227o574P2hmq1GMUiGgyKMNnG5vrHKaEZ5QryOvLcDsY8EiysHGd4csGMCdauVyenhg20zUDzI8nQdZsY60Yq6Uf8sKodkfAYv2IGAzpVYa0aasn4NQQ4ChjrkiWh5fMY3ARRLy', 'This is a description 1631208', '2022-03-25 23:00:00', NULL),
-(27, 'pklZMPS3ZkKLkA11AGyBsU2eebhRSl31Ywl4YrJZcpdXOc8ioFPxCjhTti2F6GXBrTqN6nrcIE5yZKIQbd7lhFDvf8tfoQqg67GyfpgtMqJ5MaNGYY4Qq5Q2HvJgjDEL08M6U14SGzrHSZLOi8ErDYuZSEI1aLILMvEvzo0tnKEME3HXjl1p4Gs7odfTnXkIWaZ0hI25bh', 'This is a description 0577744', '2007-02-07 07:21:00', NULL),
-(28, 'liIajdQHLhDpH1i3VgoDLEtZSk5FotGpfYFnzER6F3YysN0f5A8z8y4WlOVHscsFfWIXEBJdB28kHVM', 'Description number 0078035', '2014-08-06 02:14:00', '2021-09-28 07:09:00'),
-(29, 'PVY8XxCsfN4u7z8RoyF8aRWoo5BSfdWT33RoWFmN', 'Description number 2416596', '2007-06-20 06:37:00', '2022-12-07 01:38:00'),
-(30, 'wYVLT5aNTvecoXIJHUsNzNQjufTERzx12TksCYDSDRaXr4Ky8AGTAxUZjt5H28jFOhiz4XW6woHZUTv2AqkYEkCz455rg54CZPvLCvNdjNLDyfwomKCCbvmPJay7zFDhru1p4TOAEk0bvNjdlQFcRXg4SvzEaDXbisvWS07hiR3PhyN2yHkQFaDJam2fwnN5R5cGBGwffHrRMCQbIK1cQNAuzQbUlRxeDkd5aSsbsmV6b', 'Description number 9245451', '2022-01-05 02:38:00', '2004-07-21 00:38:00'),
-(31, '1uPu8OO3R5I', 'This is a description 6243087', '2012-08-18 04:16:00', '2009-01-30 23:15:00'),
-(32, 'ioreGYNWK4HnOQckrFKG0yiJJ1fYulcFfh31DRdSntRzX4xAtCAp4aUFMA08RcC5HdzBRGYU', 'This is a description 5171934', '2000-07-28 07:29:00', '2007-03-21 22:38:00'),
-(33, 'YDAjZJVLmbpOMu1C2QDnaGIj4M8zkNejNCBuFfHSzWi7Q6toA', 'This is a description 4329731', '2001-11-02 04:28:00', NULL),
-(34, 'kQIjP', 'This is a description 0672995', '2004-10-17 01:32:00', '2003-04-15 04:26:00'),
-(35, 'MtfwqW25h5rFawwuTCmbhW42lT0j3Xy4U6rga05r3jy5mlhkJlbkhgqREGd6ZFqq81GTcu3uu0nTlO0qGMGlGGLeFQuCVkCbiotXDnoLUimlphPJNf6B3M8uVEE6YXQtxHanzhFB4U5lyHgWu4MJLhnn2OTGitiXU6XjwUeQwHsn36Nt26MkrSpN6P1qA7a0seUGAmD0PsZmhrRup4lxse', 'This is a description 5946061', '2001-05-02 21:30:00', '2008-12-21 23:24:00'),
-(36, 'AsTLWZc8YyA6KN8of132hYuVCRocHhokoQVAp2E5FdriohwCQmISAnMEyCpn3VLIu2eupf8yLMDApOpIRSSc5b47florMj6UHd5Riq3cKOSVaJWG8c6tjncjlFlp77Djn8302zXfQQAEgXqE5RpRXyH2vBtBQnS2sBaoW0ACA3bGeo4cKCYdJX54xjsU6jXOmsJr2y6F07y', 'Description number 9338001', '2002-07-02 03:29:00', NULL),
-(37, 'Si8W7PXSfdEo4tHquY1szvd17qZ7eFidDKItujcRj7ANr0R0e6TPuJGwAnpHUmf2ZZzmurHdySVZRbU0VWrHNRbemJPZzNBjLeFw1EFyLpLyBAwLIKm0GIKYADqeq2hyFJRPvrIm8Yf0arwJLCaHNZv5uZAyZsBUVaWqURwEQngHf0EQeqW3YqEVSWAaaMFgCfVQcYpbnv04iLgeQyyU8nYRA3QgRDVzm7bsV5bxqXxDU3eu', 'This is a description 0574943', '2008-09-07 00:11:00', '2019-09-23 23:16:00'),
-(38, '2GPmyVeAHhUFFs5Bd8TBKpqH7xHamSo6DF6HkTThhdfoKfqmTFbrPRjRtF6nCxhDy6pi8ZcBRCYYbpyxDkpcWJWp2XD30WS5jKaKbsmuiUKp5ljU4cl1DpGoscdeBJkfjiQcbcSLnDw25lpdJxGXpwaDdPrSyoqeaEL3HAr7oMYwdsyZjVEu0zvYZhE2baauruhdLr5V', 'Description number 4128297', '2008-07-03 21:22:00', '2015-04-12 06:21:00'),
-(39, 'GIXneTOqZCD3ImM1iyEwzMbj5cpRe4U2slWejoGwZUDHvplQZZLIU74rBfhM6vdmQBUm1D15RqAd0ZayPEFIyHVsBNrpGpWgsN4rqG7nWHklnBqvC3Kmb2dYSlGVY5q2ExgL08u660GQNIgkXquV1HK0', 'Description number 6383053', '2015-09-04 03:44:00', '2019-01-20 06:10:00'),
-(40, 'UCazsrPE8ox7ePQdJpWtyZygR16UOyCbQ0qvqGAWsTnPBNYkzVg5Bc8AHc4Er4uJ4KMVWXs87qJcFVfxJ3al04YtE3vb2Csy52JQ8DuTNev2wVvgZtQ6AomQrHmSauGP4EmOc0GSjw5Vf43D4nuoFqpFZ3UEVsz1MoV2Pv0oNEcPfo4MfDoO21C2N1AdnienpaRS3nciw64LBdF1utbb', 'This is a description 3955980', '2022-04-12 02:50:00', '2009-10-07 21:20:00'),
-(41, 'WabGUKWWPOSd1IukxDry6prxTs1sbK1DFMBVKyMwpPWuLJoVmmpYeA0yrPvHnonffBJWnSEJ0pQAwWKya5AvcSVVyiKBlbiWC653Ecizh16D6Btn71gGcWWbF8ewHx2c5jNQTdXQb6cFwtpus8lbkaPRk1xfngsacB8g14mhMoNY71ENdovWaJuQuuYZSAubDKTQZyxXKVQPNs', 'This is a description 3424777', '2008-12-05 22:17:00', '2012-04-22 05:18:00'),
-(42, 'Va8tMOSBsP1jgJvx7yS2IBfHURvAICPILRkiErFJ6VFC8tcEGjw', 'Description number 9425665', '2003-07-06 07:28:00', '2006-04-14 02:05:00'),
-(43, 'IT27FP22CLeeBLk6Jeizl5glmVMPnH4jqEw5pXVWILtUMWkwndEkCdlb3IVZf7UHznX113PYtSetT05AmlCi3jLPfstkkZf2jLabCrkPZLYwENOntRPNILQJwTUL4f', 'Description number 6277318', '2001-07-25 22:11:00', '2007-11-30 00:23:00'),
-(44, 'MF0BEEuF5zvJyrkBE6QLP0Y8aThKa8Fr8icniJkgeyDJt600JIJRgpVXzODrfCoa4r0w1dRfTMUVMPi7lMoV5DPr3an3kKRC6EYNQBJ46oCVtGXwDZz0L0FpkYnBat3R3KMFJvqiqk0PoUtCmToO1W1XVIlTcFfZ8cD3LJI5snusi4332INmVwd5J8AM8ZM44jwJ', 'Description number 6580377', '2018-02-21 07:12:00', '2016-05-16 07:35:00'),
-(45, 'dxDMqsLlMORLOgv23JSZKaREwXv1VDlzTMID8lW8cSMn', 'Description number 2322864', '2010-04-13 22:11:00', NULL),
-(46, 'JV6xSKUzTf5ieTysHCS3JYrYDPy3M1Econ1wK4sX1JTEbB28glkHh2iD3ejRy4vk4ttHFsvYxiBXMgdevWdg', 'This is a description 6732768', '2010-03-07 02:28:00', '2009-09-30 23:41:00'),
-(47, 'I4z2udRQ7Xcji', 'This is a description 4655508', '2013-02-10 08:37:00', NULL),
-(48, 'uJzFna3kCIWSF4HPIknJsz5x6s4xtfW5FBeW0Kq7cDevP2fwbmOpznj5PWJjd17veSobreAIfsIXFX5TFYLHQ4TWjUtbM7EPl5qghvydDRWfz23rCGbHuKryRAEUAaJnVUVD0DTHZpUYLBpCPCBEth6FOxU2', 'Description number 3472049', '2016-02-04 02:25:00', '2018-06-29 06:41:00'),
-(49, 'lMrufBJTXNs5MHFQ3kUOHiYrfKHfYoKnUL4IUlkSgGDTGvqFhLAEnLFxcdSCcDs2gkwIschY8MlLf4mQf8BAP6LjZcRW0yjHMkFGWkFl6M4ulrL8aPaKzjcRwynDbwthyR5xCawG5PTmkGMAV7bn2VOfHNLw2fZopPXVLKR0FQjBhMDAfA8eHb5junyJqDm8AgZyqbAXFfZX03', 'This is a description 4982825', '2010-04-01 04:00:00', NULL),
-(50, 'njIveloTzRXWhLeWv3U0qa7sSpmxCNJJ2RIVOAGacX0mfgC75kOhmAfbELwvIVZLGj3AxOdatPFBcSnrUroVltzCX85HyqIfYNO3C3pCKAjXjQK5jgwUM5NE1t1yImV8bnIfcuKbf7RcrYVURVw5sluJ1JtvRhTUEf5Wnb4PknOTkqyzHLwMQwvBTwmi3w84iI62hLFrjymw5jvYArqTDKDvgXz1zE535HNdd3PFfZUFR6H3sNwUVVXqja', 'Description number 0663878', '2005-10-24 07:27:00', '2020-07-01 07:36:00'),
 (101, 'Audio & Headphones', '', '2025-03-24 10:00:31', NULL),
 (102, 'Smartphones & Accessories', '', '2025-03-24 10:00:31', NULL),
 (103, 'Laptops & Computers', '', '2025-03-24 10:00:31', NULL),
@@ -329,7 +277,8 @@ CREATE TABLE `order_details` (
 
 INSERT INTO `order_details` (`id`, `user_id`, `cart_id`, `total`, `created_at`, `updated_at`, `status`, `tax_amount`, `tax_rate`) VALUES
 (124, 14, 12, 1700.00, '2025-09-05 12:28:51', '2025-09-05 13:06:07', 'delivered', 0.00, 14.00),
-(125, 4, 13, 3000.00, '2025-09-05 13:22:02', NULL, 'completed', 0.00, 0.00);
+(125, 4, 13, 3000.00, '2025-09-01 13:22:02', NULL, 'completed', 0.00, 0.00),
+(126, 14, 14, 1200.00, '2025-08-12 11:03:33', NULL, 'Pending', 0.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -673,6 +622,7 @@ CREATE TABLE `product_skus` (
   `color_attribute_id` int(11) NOT NULL,
   `sku` varchar(255) NOT NULL,
   `price` decimal(10,2) DEFAULT NULL,
+  `cost_price` decimal(10,2) NOT NULL DEFAULT 0.00,
   `Currency` varchar(3) NOT NULL DEFAULT 'EGP',
   `quantity` int(11) NOT NULL,
   `loyalty` int(11) DEFAULT NULL,
@@ -684,18 +634,18 @@ CREATE TABLE `product_skus` (
 -- Dumping data for table `product_skus`
 --
 
-INSERT INTO `product_skus` (`id`, `product_id`, `size_attribute_id`, `color_attribute_id`, `sku`, `price`, `Currency`, `quantity`, `loyalty`, `created_at`, `deleted_at`) VALUES
-(66, 1, 2, 6, 'WH-MEDIUM-WHITE', 1000.00, 'EGP', 30, 0, '2025-03-26 08:16:32', NULL),
-(68, 2, 1, 6, 'IE-SMALL-WHITE', 700.00, 'EGP', 80, 0, '2025-03-26 08:16:32', NULL),
-(70, 3, 2, 6, 'FS-WHITE', 999.99, 'EGP', 15, 0, '2025-03-26 08:16:32', NULL),
-(72, 4, 3, 9, 'MR-GOLD', 499.99, 'EGP', 30, 0, '2025-03-26 08:16:32', NULL),
-(73, 5, 4, 4, 'GL-XL', 1499.99, 'EGP', 10, 0, '2025-03-26 08:16:32', NULL),
-(74, 6, 3, 4, 'UL-LARGE', 1199.99, 'EGP', 15, 0, '2025-03-26 08:16:32', NULL),
-(76, 7, 1, 8, 'FW-BLUE', 299.99, 'EGP', 50, 0, '2025-03-26 08:16:32', NULL),
-(77, 8, 2, 9, 'LW-GOLD', 499.99, 'EGP', 30, 0, '2025-03-26 08:16:32', NULL),
-(79, 9, 3, 7, 'BS-RED', 99.99, 'EGP', 60, 0, '2025-03-26 08:16:32', NULL),
-(80, 10, 4, 5, 'HT-BLACK', 799.99, 'EGP', 20, 0, '2025-03-26 08:16:32', NULL),
-(81, 11, 3, 8, 'FW-BLUE', 102221.00, 'EGP', 123, 0, '2025-03-26 08:26:50', NULL);
+INSERT INTO `product_skus` (`id`, `product_id`, `size_attribute_id`, `color_attribute_id`, `sku`, `price`, `cost_price`, `Currency`, `quantity`, `loyalty`, `created_at`, `deleted_at`) VALUES
+(66, 1, 2, 6, 'WH-MEDIUM-WHITE', 1000.00, 0.00, 'EGP', 100, 0, '2025-03-26 08:16:32', NULL),
+(68, 2, 1, 6, 'IE-SMALL-WHITE', 700.00, 0.00, 'EGP', 80, 0, '2025-03-26 08:16:32', NULL),
+(70, 3, 2, 6, 'FS-WHITE', 999.99, 0.00, 'EGP', 15, 0, '2025-03-26 08:16:32', NULL),
+(72, 4, 3, 9, 'MR-GOLD', 499.99, 0.00, 'EGP', 30, 0, '2025-03-26 08:16:32', NULL),
+(73, 5, 4, 4, 'GL-XL', 1499.99, 0.00, 'EGP', 10, 0, '2025-03-26 08:16:32', NULL),
+(74, 6, 3, 4, 'UL-LARGE', 1199.99, 0.00, 'EGP', 15, 0, '2025-03-26 08:16:32', NULL),
+(76, 7, 1, 8, 'FW-BLUE', 299.99, 0.00, 'EGP', 50, 0, '2025-03-26 08:16:32', NULL),
+(77, 8, 2, 9, 'LW-GOLD', 499.99, 0.00, 'EGP', 30, 0, '2025-03-26 08:16:32', NULL),
+(79, 9, 3, 7, 'BS-RED', 99.99, 0.00, 'EGP', 60, 0, '2025-03-26 08:16:32', NULL),
+(80, 10, 4, 5, 'HT-BLACK', 799.99, 0.00, 'EGP', 20, 0, '2025-03-26 08:16:32', NULL),
+(81, 11, 3, 8, 'FW-BLUE', 102221.00, 0.00, 'EGP', 123, 0, '2025-03-26 08:26:50', NULL);
 
 -- --------------------------------------------------------
 
@@ -708,6 +658,13 @@ CREATE TABLE `product_suppliers` (
   `product_id` int(11) NOT NULL,
   `supplier_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_suppliers`
+--
+
+INSERT INTO `product_suppliers` (`id`, `product_id`, `supplier_id`) VALUES
+(1, 5, 1);
 
 -- --------------------------------------------------------
 
@@ -794,9 +751,16 @@ CREATE TABLE `stock_movements` (
   `movement_type` enum('IN','OUT') NOT NULL,
   `quantity` int(11) NOT NULL,
   `reference` enum('Purchase','Sale','Return','Adjustment') NOT NULL,
-  `reference_id` int(11) NOT NULL,
+  `reference_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `stock_movements`
+--
+
+INSERT INTO `stock_movements` (`id`, `product_sku_id`, `movement_type`, `quantity`, `reference`, `reference_id`, `created_at`) VALUES
+(2, 66, 'IN', 100, 'Purchase', NULL, '2025-09-06 09:36:18');
 
 -- --------------------------------------------------------
 
@@ -874,6 +838,13 @@ CREATE TABLE `suppliers` (
   `address` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `suppliers`
+--
+
+INSERT INTO `suppliers` (`id`, `name`, `contact_name`, `phone`, `email`, `address`, `created_at`) VALUES
+(1, 'hikvision', 'omar khaled', '01286246292', 'ok3050802@gmail.com', 'nasrcity', '2025-09-06 11:22:04');
 
 -- --------------------------------------------------------
 
@@ -980,13 +951,6 @@ CREATE TABLE `whishlist` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `whishlist`
---
-
-INSERT INTO `whishlist` (`id`, `user_id`, `product_id`, `created_at`, `deleted_at`) VALUES
-(52, 14, 5, '2025-09-04 11:22:14', NULL);
 
 --
 -- Indexes for dumped tables
@@ -1220,7 +1184,7 @@ ALTER TABLE `cart`
 -- AUTO_INCREMENT for table `cart_item`
 --
 ALTER TABLE `cart_item`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `cart_promocodes`
@@ -1262,7 +1226,7 @@ ALTER TABLE `notification`
 -- AUTO_INCREMENT for table `order_details`
 --
 ALTER TABLE `order_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
 
 --
 -- AUTO_INCREMENT for table `order_item`
@@ -1310,7 +1274,7 @@ ALTER TABLE `product_skus`
 -- AUTO_INCREMENT for table `product_suppliers`
 --
 ALTER TABLE `product_suppliers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `promocodes`
@@ -1334,7 +1298,7 @@ ALTER TABLE `role_permissions`
 -- AUTO_INCREMENT for table `stock_movements`
 --
 ALTER TABLE `stock_movements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `sub_categories`
@@ -1346,7 +1310,7 @@ ALTER TABLE `sub_categories`
 -- AUTO_INCREMENT for table `suppliers`
 --
 ALTER TABLE `suppliers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tax_rules`
