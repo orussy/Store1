@@ -1373,6 +1373,7 @@ transform: translateY(0);
     font-size: 14px;
     min-width: 20px;
     text-align: center;
+    color: #0d3b5e;
 }
 
 .cart-total {
