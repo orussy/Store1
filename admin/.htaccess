@@ -1,0 +1,42 @@
+# Admin folder security
+# Allow access to admin files but protect sensitive files
+
+# Block access to sensitive authentication and configuration files
+<Files "auth_check.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "test_security.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Block access to any .htaccess files
+<Files ".htaccess">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Block access to documentation files
+<Files "*.md">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Block access to hidden files
+<Files ".*">
+    Order Deny,Allow
+    Deny from all
+</Files>

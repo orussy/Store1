@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Page</title>
+    <link rel="stylesheet" href="style/reg.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+       
+    </style>
+</head>
+<body>
+    <h2>Signup</h2>
+    <form id="regform">
+        <label for="f_name">First Name:</label>
+        <input type="text" id="f_name" name="f_name" required><br><br>
+
+        <label for="l_name">Last Name:</label>
+        <input type="text" id="l_name" name="l_name" required><br><br>
+
+       
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="birthdate">Birthdate:</label>
+        <input type="date" id="birthdate" name="birthdate" required><br><br>
+
+        <label for="phone_no">Phone Number:</label>
+        <input type="text" id="phone_no" name="phone_no" required><br><br>
+
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select><br><br>
+
+        <button type="submit">Signup</button>
+    </form>
+
+    <p id="responseMessage"></p>
+
+    <script src="js/reg.js">
+       
+    </script>
+</body>
+</html>

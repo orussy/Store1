@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Login</title>
+    <link rel="stylesheet" href="style/login.css">
+    <!-- Add Google client library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <script>
+    (async function redirectIfLoggedIn() {
+        try {
+            const resp = await fetch('get_user_data.php', { credentials: 'include' });
+            if (!resp.ok) return; // not logged in
+            const data = await resp.json();
+            if (data && data.user_id) {
+                const roleId = Number(data.role_id || 7);
+                const target = [1,2,3,4,5,6].includes(roleId) ? 'admin/admindashboard.php' : 'dashboard.html';
+                window.location.replace(target);
+            }
+        } catch (e) {
+            // ignore
+        }
+    })();
+    </script>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div id="error-message" class="error-message"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+            
+            <div class="forgot-password-link">
+                <a href="forgot-password.html">Forgot Password?</a>
+            </div>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <div class="google-btn-container">
+            <div id="g_id_onload"
+                data-client_id="466307435849-97q00n1raskumkgsfvoa4r1ocu8bo093.apps.googleusercontent.com"
+                data-context="signin"
+                data-callback="handleGoogleLogin"
+                data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                data-type="standard"
+                data-size="large"
+                data-theme="outline"
+                data-text="sign_in_with"
+                data-shape="rectangular"
+                data-logo_alignment="left">
+            </div>
+        </div>
+        <div class="signup-container">
+            <p>Don't have an account?</p>
+            <a href="regestration.html" class="signup-btn">Sign Up</a>
+        </div>
+    </div>
+
+    
+
+    <script src="js/login.js?v=1.2"></script>
+</body>
+</html>
