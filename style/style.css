@@ -631,6 +631,7 @@ z-index: 9999;
 opacity: 1;
 transform: translateY(0);
 }
+<<<<<<< HEAD
 
 .toast-message.success {
 background-color: #4CAF50;
@@ -643,6 +644,8 @@ background-color: #f44336;
 .toast-message.info {
 background-color: #2196F3;
 }
+=======
+>>>>>>> d6e9a3f61ae1a2cb21d39965ecd7b4c5602e0a66
 .wishlist-header h3 i {
   color: #ff4444;
 }
@@ -1396,6 +1399,7 @@ background-color: #2196F3;
     color: #0d3b5e;
 }
 
+<<<<<<< HEAD
 /* Product Reviews Styles */
 .reviews-section {
     margin-top: 30px;
@@ -1755,4 +1759,8 @@ background-color: #2196F3;
         min-width: 30px;
         height: 25px;
     }
+=======
+.cart-total strong {
+    font-size: 20px;
+>>>>>>> d6e9a3f61ae1a2cb21d39965ecd7b4c5602e0a66
 }

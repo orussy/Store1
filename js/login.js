@@ -18,10 +18,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     const formData = new FormData(e.target);
     
-    // Temporarily disable client-side hashing to test
-    // const password = formData.get('password');
-    // const hashedPassword = await hashPassword(password);
-    // formData.set('password', hashedPassword);
+    // Hash password on client side to match registration process
+    const password = formData.get('password');
+    const hashedPassword = await hashPassword(password);
+    formData.set('password', hashedPassword);
 
     try {
         console.log('Sending login request...');

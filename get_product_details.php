@@ -31,7 +31,6 @@ $stmt = $connect->prepare("
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
-
 if ($result->num_rows === 0) {
     echo json_encode(['error' => 'Product not found']);
     exit;

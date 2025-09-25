@@ -174,7 +174,6 @@ let slideIndex = 0;
                     
                     variantButtons += '</div>';
                 }
-
                 const imageUrl = normalizeImageUrl(product.cover);
                 card.innerHTML = `
                     <div class="image-container">
@@ -356,7 +355,6 @@ let slideIndex = 0;
                 })`);
             }
         }
-
         // Setup pagination buttons
         function setupPagination() {
             const paginationContainer = document.getElementById('pagination');

@@ -53,8 +53,8 @@ try {
     $avatar = $folderName . "/avatar.png";
 
     // Insert user data (let MySQL auto-increment the ID)
-    $query = "INSERT INTO users (`avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `gender`, `status`, `role`) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 'user')";
+    $query = "INSERT INTO users (`avatar`, `f_name`, `l_name`, `email`, `password`, `birthdate`, `phone_no`, `gender`, `status`, `role_id`) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 7)";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("ssssssss", 
         $avatar, 

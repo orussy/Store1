@@ -97,7 +97,6 @@ if (is_dir($folder_path)) {
 
 // Combine variant images and additional images
 $images = array_merge($variant_images, $additional_images);
-
 echo json_encode([
     'status' => 'success',
     'folder_path' => $folder_path,

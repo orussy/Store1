@@ -175,7 +175,6 @@
 		</div>
 	</div>
 
-
 	<!-- Product Reviews Section -->
 	<div class="container" style="max-width:1200px; margin: 0 auto 40px;">
 		<div class="reviews-section">
@@ -195,6 +194,17 @@
 					<!-- Reviews list will be loaded here -->
 				</div>
 			</div>
+		</div>
+	</div>
+
+	<!-- Comments Section -->
+	<div class="container" style="max-width:1200px; margin: 0 auto 40px;">
+		<h2 style="color:#0d3b5e; margin-bottom:10px;">Comments</h2>
+		<div id="commentsList" class="comments-list" style="background:#fff; border-radius:8px; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,0.06);"></div>
+		<div id="commentFormWrap" style="margin-top:12px;">
+			<textarea id="commentInput" rows="3" placeholder="Write a comment..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></textarea>
+			<button id="submitComment" class="add-to-cart" style="margin-top:8px;">Post Comment</button>
+			<div id="commentHint" style="display:none; color:#666; margin-top:6px;">Login to post comments</div>
 		</div>
 	</div>
 
@@ -234,7 +244,6 @@
 				
 				// Store product data globally for variant switching
 				window.currentProduct = product;
-				
 				document.getElementById('productImage').src = product.cover || 'img/product/1.jpg';
 				document.getElementById('productName').textContent = product.name || '';
 				document.getElementById('productSummary').textContent = product.summary || '';
@@ -281,7 +290,6 @@
 				if (product.variants && product.variants.length > 1) {
 					addVariantSelection(product);
 				}
-				
 				// Handle add to cart button based on stock
 				const addToCartBtn = document.getElementById('addToCartBtn');
 				if (isOutOfStock) {
@@ -306,8 +314,8 @@
 				
 				document.getElementById('addToWishlistBtn').onclick = function() { addToWishlist(product.id); };
 
-				// Load product images and related products
-				await Promise.all([loadProductImages(id), loadRelated(product)]);
+				// Load product images, comments and related products
+				await Promise.all([loadProductImages(id), loadComments(id), loadRelated(product)]);
 				initRelatedControls();
 			} catch(e) { console.error(e); }
 		}
@@ -388,6 +396,53 @@
 			}
 		}
 
+		async function loadComments(productId) {
+			const list = document.getElementById('commentsList');
+			list.innerHTML = 'Loading comments...';
+			try {
+				const resp = await fetch('comments.php?product_id=' + encodeURIComponent(productId));
+				const data = await resp.json();
+				if (data.status !== 'success') throw new Error(data.message || 'Failed');
+				if (!data.items || data.items.length === 0) { list.innerHTML = '<div class="empty-wishlist">No comments yet</div>'; return; }
+				list.innerHTML = data.items.map(it => `
+					<div class="wishlist-item" style="align-items:flex-start;">
+						<div class="wishlist-item-details">
+							<h4 style="margin-bottom:4px;">${it.user_name || 'User'}</h4>
+							<p style="white-space:pre-wrap;">${it.comment}</p>
+							<p style="color:#999; font-size:12px; margin-top:6px;">${new Date(it.created_at).toLocaleString()}</p>
+						</div>
+					</div>
+				`).join('');
+			} catch(err) {
+				console.error(err);
+				list.innerHTML = '<div class="error-message">Failed to load comments</div>';
+			}
+			initCommentForm(productId);
+		}
+
+		function initCommentForm(productId) {
+			const userData = JSON.parse(localStorage.getItem('userData'));
+			const input = document.getElementById('commentInput');
+			const btn = document.getElementById('submitComment');
+			const hint = document.getElementById('commentHint');
+			if (!userData || !userData.email) {
+				input.disabled = true; btn.disabled = true; hint.style.display = 'block';
+				btn.classList.add('disabled');
+				return;
+			}
+			btn.onclick = async () => {
+				const comment = (input.value || '').trim();
+				if (!comment) return;
+				btn.disabled = true;
+				try {
+					const resp = await fetch('comments.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ product_id: Number(productId), comment }) });
+					const data = await resp.json();
+					if (data.status === 'success') { input.value = ''; loadComments(productId); }
+					else { alert(data.message || 'Failed to post'); }
+				} catch(e) { console.error(e); alert('Failed to post'); }
+				finally { btn.disabled = false; }
+			};
+		}
 		async function loadRelated(product) {
 			// Use same category/subcategory to find related; fallback to latest products
 			try {
@@ -614,7 +669,6 @@
 			};
 			return colorMap[color] || '#cccccc';
 		}
-
 		document.addEventListener('DOMContentLoaded', loadProductDetails);
 	</script>
 </body>

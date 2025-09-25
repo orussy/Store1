@@ -2,8 +2,8 @@
 session_start();
 require_once '../config/db.php';
 
-// Check if user is admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+// Check if user is admin (role_id 1 or 2)
+if (!isset($_SESSION['role_id']) || !in_array($_SESSION['role_id'], [1, 2])) {
     header('Location: ../index.html');
     exit();
 }
@@ -11,8 +11,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 header("Content-Type: application/json");
 
 try {
-    // Get all users (using existing database structure)
-    $query = "SELECT id, f_name, l_name, email, status, role FROM users ORDER BY id";
+    // Get all users with role information
+    $query = "SELECT u.id, u.f_name, u.l_name, u.email, u.status, u.role_id, r.name as role_name 
+              FROM users u 
+              LEFT JOIN roles r ON u.role_id = r.id 
+              ORDER BY u.id";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -25,7 +28,8 @@ try {
             "l_name" => $row['l_name'],
             "email" => $row['email'],
             "status" => $row['status'],
-            "role" => $row['role']
+            "role_id" => $row['role_id'],
+            "role_name" => $row['role_name'] ?? 'Unknown'
         ];
     }
     

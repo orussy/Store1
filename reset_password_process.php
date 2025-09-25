@@ -148,7 +148,7 @@ try {
         "message" => "Password has been successfully reset. You can now log in with your new password.",
         "userData" => [
             "email" => $reset_data['email'],
-            "role" => $reset_data['role'] ?? 'user',
+            "role_id" => $reset_data['role_id'] ?? 7,
             "name" => $reset_data['f_name'] . " " . $reset_data['l_name'],
             "id" => $reset_data['user_id']
         ]

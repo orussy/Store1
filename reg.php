@@ -12,7 +12,7 @@ header("Content-Type: application/json");
 $f_name = $_POST['f_name'] ?? '';
 $l_name = $_POST['l_name'] ?? '';
 $email = $_POST['email'] ?? '';
-$password = $_POST['password'] ?? '';
+$password = $_POST['password'] ?? ''; // This is SHA-256 hashed from client
 $birthdate = $_POST['birthdate'] ?? '';
 $phone_no = $_POST['phone_no'] ?? '';
 $gender = $_POST['gender'] ?? '';

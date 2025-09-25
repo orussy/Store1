@@ -37,7 +37,7 @@ $user_id = $_SESSION['user_id'];
 
 // Helper function to get wishlist data
 function getWishlistData($conn, $user_id) {
-    $sql = "SELECT w.*, p.name, p.cover, ps.price, ps.Currency,
+    $sql = "SELECT w.*, p.name, ps.cover, ps.price, ps.Currency,
             d.discount_type, d.discount_value, d.start_date, d.end_date, d.is_active as discount_active
             FROM whishlist w
             JOIN products p ON w.product_id = p.id
