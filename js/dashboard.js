@@ -45,9 +45,9 @@ window.addEventListener('load', async () => {
             return;
         }
 
-        // Display user info
-        if (usernameEl) usernameEl.textContent = effectiveUser.email;
-        if (userSection) userSection.style.display = 'block';
+        // Display user first name (fallbacks to name/email prefix)
+        if (usernameEl) { usernameEl.textContent = ''; }
+        if (userSection) userSection.style.display = 'flex';
         if (loginSection) loginSection.style.display = 'none';
 
         // Show different content based on user role_id
@@ -69,17 +69,5 @@ window.addEventListener('load', async () => {
     }
 });
 
-async function logout() {
-    try {
-        // Call logout endpoint
-        await fetch('logout.php', {
-            credentials: 'include'
-        });
-    } catch (error) {
-        console.error('Logout error:', error);
-    } finally {
-        // Clear localStorage and redirect to login page
-        localStorage.removeItem('userData');
-        window.location.href = 'index.html';
-    }
-} 
+// Logout function is now handled by js.js
+// This ensures consistency across all pages 

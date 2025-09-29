@@ -16,9 +16,9 @@ function toggleCart() {
 // Close cart dropdown when clicking outside
 document.addEventListener('click', function(event) {
     const cartDropdown = document.getElementById('cartDropdown');
-    const cartIcon = document.querySelector('img[alt="Cart"]');
+    const cartNavItem = cartDropdown ? cartDropdown.closest('.nav-item') : null;
     
-    if (!cartDropdown.contains(event.target) && !cartIcon.contains(event.target)) {
+    if (cartDropdown && cartNavItem && !cartNavItem.contains(event.target)) {
         cartDropdown.classList.remove('show');
     }
 });
@@ -226,4 +226,6 @@ document.addEventListener('DOMContentLoaded', function() { loadCart('cartItems')
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.toggleCart = toggleCart;
-window.updateCartItemQuantity = updateCartItemQuantity; 
+window.updateCartItemQuantity = updateCartItemQuantity;
+window.loadCart = loadCart;
+window.showToast = showToast; 

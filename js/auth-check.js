@@ -64,9 +64,7 @@ async function checkAuth() {
         const userSection = document.getElementById('userSection');
         const loginSection = document.getElementById('loginSection');
         
-        if (usernameElement) {
-            usernameElement.textContent = sessionData.email;
-        }
+        if (usernameElement) { usernameElement.textContent = ''; }
         if (userEmailElement) {
             userEmailElement.textContent = sessionData.email;
         }

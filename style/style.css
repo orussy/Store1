@@ -25,11 +25,14 @@ body {
     left: 0;
     right: 0;
     min-height: 60px;
+    gap: 12px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .nav-icon {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     transition: filter 0.3s ease;
     display: block;
@@ -87,31 +90,34 @@ body {
 }
 .navbar .left {
     font-size: 18px;
-    flex: 1;
+    flex: 0 0 auto;
     text-align: left;
 }
 .left img {
     width: 100px;
-
+    display: block;
 }
 .navbar .center {
-    flex: 1;
+    flex: 1 1 40%;
+    display: flex;
+    justify-content: center;
     text-align: center;
+    min-width: 0;
+    max-width: 40%;
 }
-.navbar .center img {
-    width: 40px;
-    height: 40px;
-}
+.navbar .center img { width: 20px; height: 20px; }
 .navbar .right {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 18px;
+    gap: 6px;
     flex-wrap: nowrap;
     white-space: nowrap;
     margin: 0;
     padding: 0;
+    min-width: 0;
+    flex-shrink: 0;
 }
 
 .navbar .right img {
@@ -285,6 +291,7 @@ img {vertical-align: middle;
   max-width: 100%;
   position: relative;
   margin: auto;
+  margin-top: 70px;
 }
 
 .prev, .next {
@@ -428,99 +435,6 @@ img {vertical-align: middle;
   transform: scale(1.1);
 }
 
-.wishlist-dropdown {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: white;
-  min-width: 300px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 1000;
-  border-radius: 4px;
-  padding: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.wishlist-dropdown.show {
-  display: block;
-}
-
-.wishlist-header {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 10px;
-}
-
-.wishlist-header h3 a {
-  margin: 0;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.wishlist-header a{
-  text-decoration: none;
-  transition: 0.3s;
-}
-.wishlist-header a:hover{
-  color: #ff4444;
-  
-}
-.wishlist-dropdown {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: white;
-  min-width: 300px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 1000;
-  border-radius: 4px;
-  padding: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.wishlist-dropdown.show {
-  display: block;
-}
-
-.wishlist-header {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 10px;
-}
-
-.wishlist-header h3 {
-  margin: 0;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.wishlist-header h3 i {
-  color: #ff4444;
-}
-
-.empty-wishlist {
-  text-align: center;
-  color: #666;
-  padding: 20px;
-  font-style: italic;
-}
-
-.wishlist-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  gap: 10px;
-}
-
-.wishlist-item:last-child {
   border-bottom: none;
 }
 
@@ -982,7 +896,8 @@ background-color: #2196F3;
   margin: auto;
   padding: 0.3em;
   justify-content: center;
-  max-width: 30em;
+  max-width: 28em;
+  flex: 0 1 28em;
 }
 .search-bar input {
   background: transparent;
@@ -1004,6 +919,302 @@ background-color: #2196F3;
   border-radius: 0.375em 0 0 0.375em;
   box-shadow: 0 0 0 0.1em #d9d9d9 inset;
   transform: scale(1);
+}
+
+/* NAVBAR-SPECIFIC OVERRIDES: prevent late expansion causing wrap */
+/* Limit search width in navbar without breaking its animation */
+.navbar .center .search-bar { max-width: 18em; width: 100%; flex: 1 1 auto; }
+.navbar .center .search-bar input { min-width: 0; }
+
+/* Prevent long usernames/emails from breaking navbar layout */
+.username-text,
+.user-email {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+/* Nav item wrapper for proper dropdown positioning */
+.nav-item {
+  position: relative;
+  display: inline-block;
+}
+
+/* Ensure dropdown containers do not affect navbar width before open */
+.cart-dropdown,
+.wishlist-dropdown,
+.notifications-dropdown {
+  max-width: 90vw;
+  position: absolute;
+}
+
+/* Cart dropdown styles */
+.cart-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1001;
+  min-width: 300px;
+  max-width: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.cart-dropdown.show {
+  display: block;
+}
+
+.cart-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.cart-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.cart-header a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.cart-header a:hover {
+  color: #0056b3;
+}
+
+/* Wishlist dropdown styles */
+.wishlist-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1001;
+  min-width: 300px;
+  max-width: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.wishlist-dropdown.show {
+  display: block;
+}
+
+.wishlist-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.wishlist-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.wishlist-header a {
+  text-decoration: none;
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.wishlist-header a:hover {
+  color: #c82333;
+}
+
+/* Notifications dropdown styles */
+.notifications-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1001;
+  min-width: 300px;
+  max-width: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.notifications-dropdown.show {
+  display: block;
+}
+
+.notifications-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Dropdown item styles */
+.cart-item, .wishlist-item, .notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-item:last-child, .wishlist-item:last-child, .notification-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item img, .wishlist-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.cart-item-details, .wishlist-item-details, .notification-item-details {
+  flex: 1;
+}
+
+.cart-item-details h4, .wishlist-item-details h4, .notification-item-details h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.cart-item-details p, .wishlist-item-details p, .notification-item-details p {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Empty state styles */
+.empty-cart, .empty-wishlist, .empty-notifications {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Error message styles */
+.error-message {
+  padding: 15px;
+  color: #dc3545;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Loading styles */
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+/* Notification badge styles */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: #dc3545;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Unread notification styles */
+.notification-item.unread {
+  background-color: #f8f9fa;
+  border-left: 3px solid #007bff;
+}
+
+.notification-item.unread .notification-item-details h4 {
+  font-weight: bold;
+}
+
+.timestamp {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Mobile responsiveness for dropdowns */
+@media (max-width: 768px) {
+  .cart-dropdown,
+  .wishlist-dropdown,
+  .notifications-dropdown {
+    min-width: 280px;
+    max-width: 90vw;
+    right: -10px;
+  }
+}
+
+/* Ensure dropdowns don't interfere with each other */
+.nav-item {
+  z-index: 1000;
+}
+
+.nav-item:hover .cart-dropdown,
+.nav-item:hover .wishlist-dropdown,
+.nav-item:hover .notifications-dropdown {
+  z-index: 1001;
+}
+
+/* Fix for dropdown positioning on smaller screens */
+@media (max-width: 480px) {
+  .cart-dropdown,
+  .wishlist-dropdown,
+  .notifications-dropdown {
+    right: -20px;
+    min-width: 250px;
+  }
+}
+
+/* Prevent wrapping on smaller widths by hiding long email label */
+/* Always hide username text in navbar to prevent wrapping */
+.navbar .user-section .user-email,
+.navbar .user-section .username-text,
+.navbar .user-section span { display: none !important; }
+
+@media (max-width: 1024px) {
+  .navbar .center .search-bar { max-width: 18em; }
 }
 .search-btn {
   background: #171717;
@@ -1234,30 +1445,6 @@ background-color: #2196F3;
   display: flex;
   
 }
-.cart-dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: white;
-    min-width: 300px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    z-index: 1000;
-    margin-top: 10px;
-}
-
-.cart-dropdown.show {
-    display: block;
-}
-
-.cart-header {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-}
-
-.cart-header h3 {
-    margin: 0;
     color: #333;
     font-size: 18px;
     display: flex;

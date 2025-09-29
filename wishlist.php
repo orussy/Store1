@@ -23,6 +23,7 @@ if (!isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/new-navbar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <title>Wishlist</title>
     <style>
@@ -99,63 +100,7 @@ if (!isset($_SESSION['user_id'])) {
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="left"> <a href="dashboard.html"><img src="img/store logo with one element on a white background.png" alt=""></a></div>
-        <div class="center">
-            <form action="" class="search-bar">
-                <input type="search" name="search" pattern=".*\S.*" required placeholder="Search Here...">
-                <button class="search-btn" type="submit">
-                    <span>Search</span>
-                </button>
-            </form>
-        </div>
-        <div class="right">
-            <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
-            <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
-            <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
-            <a href="#" class="nav-link"><img src="img/phone-solid.svg" alt="Night Mode" class="nav-icon"></a>
-            <!-- Cart dropdown -->
-            <div class="cart-dropdown" id="cartDropdown">
-                <div class="cart-header">
-                    <h3><i class="fa-solid fa-cart-shopping"></i><a href="cart.php">< Shopping Cart</a></h3>
-                </div>
-                <div id="cartItems"></div>
-            </div>
-            <!-- Wishlist dropdown -->
-            <div class="wishlist-dropdown" id="wishlistDropdown">
-                <div class="wishlist-header">
-                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
-                </div>
-                <div id="wishlistItems"></div>
-            </div>
-            <!-- Notifications dropdown -->
-            <div class="notifications-dropdown" id="notificationsDropdown">
-                <div class="notifications-header">
-                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
-                </div>
-                <div id="notificationsItems">
-                    <!-- Notifications will be dynamically inserted here -->
-                </div>
-            </div>
-            <!-- Login/User section -->
-            <div class="user-section">
-                <div id="loginSection" style="display: none;">
-                    <a href="index.html" class="nav-link">
-                        <img src="img/right-to-bracket-solid.svg" alt="Login" class="nav-icon">
-                    </a>
-                </div>
-                <div id="userSection" style="display: none;">
-                    <span id="username" class="username-text"></span>
-                    <a href="#" class="nav-link">
-                        <img src="img/user-solid.svg" alt="Profile" class="nav-icon">
-                    </a>
-                    <a href="#" class="nav-link" onclick="logout()">
-                        <img src="img/right-from-bracket-solid.svg" alt="Logout" class="nav-icon">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="navbar-root"></div>
     <div class="container">
         <h2>My Wishlist</h2>
         <div id="wishlist-container" class="wishlist-grid"></div>
@@ -163,6 +108,7 @@ if (!isset($_SESSION['user_id'])) {
     <script src="js/auth-check.js"></script>
     <script src="js/wishlist.js"></script>
     <script src="js/js.js"></script>
+    <script src="js/navbar.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/cart.js"></script>
 </body>

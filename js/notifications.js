@@ -202,10 +202,10 @@ function formatTimestamp(timestamp) {
 // Close notifications when clicking outside
 document.addEventListener('click', function(event) {
     const notificationsDropdown = document.getElementById('notificationsDropdown');
-    const bellIcon = document.querySelector('.nav-icon[alt="Security"]');
+    const notificationsNavItem = notificationsDropdown ? notificationsDropdown.closest('.nav-item') : null;
     
-    // Check if click is outside the notifications dropdown and icon
-    if (!notificationsDropdown.contains(event.target) && event.target !== bellIcon) {
+    // Check if click is outside the notifications nav item
+    if (notificationsDropdown && notificationsNavItem && !notificationsNavItem.contains(event.target)) {
         notificationsDropdown.classList.remove('show');
     }
 });
@@ -218,4 +218,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load notifications in the background
         loadNotifications();
     }
-}); 
+});
+
+// Make functions globally accessible
+window.toggleNotifications = toggleNotifications;
+window.loadNotifications = loadNotifications;
+window.markAsRead = markAsRead; 

@@ -10,93 +10,13 @@ body {
     background-color: #f0f8f0;
 }
 
-/* Override dashboard navbar styles to fix alignment */
-.navbar {
-    background-color: #0d3b5e !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    color: white;
-    flex-wrap: nowrap;
-    width: 100%;
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    right: 0;
-}
+/* Remove old navbar styles - let new navbar handle styling */
 
-.navbar .left img {
-    width: 100px;
-    height: auto;
-}
-
-.navbar .center {
-    flex: 1;
-    text-align: center;
-}
-
-.navbar .center .search-icon {
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-}
-
-.navbar .right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 15px !important;
-}
-
-.navbar .right .nav-icon {
-    width: 25px !important;
-    height: 25px !important;
-    cursor: pointer;
-    transition: filter 0.3s ease;
-    vertical-align: middle;
-    display: inline-block;
-    /* Icons will now display in their original black color */
-}
-
-.navbar .right .nav-link {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    text-decoration: none;
-}
-
-.navbar .right .nav-link .nav-icon {
-    width: 25px !important;
-    height: 25px !important;
-    vertical-align: middle;
-    display: inline-block;
-    /* Icons will now display in their original black color */
-}
-
-.user-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-left: 10px;
-}
-
-.user-email {
-    color: black !important;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 400;
-    white-space: nowrap;
-    margin-right: 5px;
-}
-
-/* Main Container - positioned below dashboard navbar */
+/* Main Container - positioned below new navbar */
 .main-container {
     display: flex;
-    min-height: calc(100vh - 80px); /* Adjusted for dashboard navbar height */
-    margin-top: 80px; /* Start below dashboard navbar */
+    min-height: calc(100vh - 70px); /* Adjusted for new navbar height */
+    margin-top: 70px; /* Start below new navbar */
     background-color: #f0f8f0;
 }
 

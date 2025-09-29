@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Login</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/new-navbar.css">
     <link rel="stylesheet" href="style/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <!-- Add Google client library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+    <div id="navbar-root"></div>
     <script>
     (async function redirectIfLoggedIn() {
         try {
@@ -72,5 +76,6 @@
     
 
     <script src="js/login.js?v=1.2"></script>
+    <script src="js/navbar.js"></script>
 </body>
 </html>

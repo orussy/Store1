@@ -6,65 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile - Store</title>
     <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/new-navbar.css">
     <link rel="stylesheet" href="style/user-profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
-    <!-- Navbar (exactly like the image) -->
-    <div class="navbar">
-        <div class="left">
-            <a href="dashboard.html">
-                <img src="img/store logo with one element on a white background.png" alt="Store Logo">
-            </a>
-        </div>
-        <div class="center">
-            <i class="fas fa-search search-icon"></i>
-        </div>
-        <div class="right">
-            <img src="img/heart-solid.svg" alt="wishlist" class="nav-icon" onclick="toggleWishlist()">
-            <img src="img/bell-solid.svg" alt="Security" class="nav-icon" onclick="toggleNotifications()">
-            <img src="img/cart-shopping-solid.svg" alt="Cart" class="nav-icon" onclick="toggleCart()">
-            <img src="img/phone-solid.svg" alt="Phone" class="nav-icon">
-            
-            <!-- Cart dropdown -->
-            <div class="cart-dropdown" id="cartDropdown">
-                <div class="cart-header">
-                    <h3><i class="fa-solid fa-cart-shopping"></i> <a href="cart.php">Shopping Cart</a></h3>
-                </div>
-                <div id="cartItems"></div>
-            </div>
-
-            <!-- Wishlist dropdown -->
-            <div class="wishlist-dropdown" id="wishlistDropdown">
-                <div class="wishlist-header">
-                    <h3><i class="fa-solid fa-heart"></i><a href="wishlist.php"> My Wishlist</a></h3>
-                </div>
-                <div id="wishlistItems"></div>
-            </div>
-
-            <!-- Notifications dropdown -->
-            <div class="notifications-dropdown" id="notificationsDropdown">
-                <div class="notifications-header">
-                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
-                </div>
-                <div id="notificationsItems">
-                    <!-- Notifications will be dynamically inserted here -->
-                </div>
-            </div>
-            
-            <!-- Email and User section -->
-            <div class="user-section">
-                <span id="userEmail" class="user-email"></span>
-                <a href="user-profile.html" class="nav-link">
-                    <img src="img/user-solid.svg" alt="Profile" class="nav-icon">
-                </a>
-                <a href="#" class="nav-link" onclick="logout()">
-                    <img src="img/right-from-bracket-solid.svg" alt="Logout" class="nav-icon">
-                </a>
-            </div>
-        </div>
-    </div>
+    <div id="navbar-root"></div>
 
     <!-- Main Container -->
     <div class="main-container">
@@ -151,8 +99,11 @@
             
             const userData = JSON.parse(localStorage.getItem('userData'));
 
-            // Set email in navbar (like the image shows)
-            document.getElementById('userEmail').textContent = userData.email || 'it.helpdesk@hungerstationbfc.com';
+            // Set email in navbar if element exists (dashboard navbar may not have this span)
+            const userEmailEl = document.getElementById('userEmail');
+            if (userEmailEl) {
+                userEmailEl.textContent = userData.email || 'it.helpdesk@hungerstationbfc.com';
+            }
             
             // Set username in sidebar (prefer first + last, then name, then fallback)
             const nameEl = document.querySelector('.user-name-placeholder span');
@@ -213,7 +164,8 @@
 
                     // Update email in navbar if changed
                     if (d.userData.email && d.userData.email !== userData.email) {
-                        document.getElementById('userEmail').textContent = d.userData.email;
+                        const userEmailEl2 = document.getElementById('userEmail');
+                        if (userEmailEl2) userEmailEl2.textContent = d.userData.email;
                     }
 
                     // Persist updated fields to localStorage
@@ -298,6 +250,7 @@
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/user-profile.js"></script>
+    <script src="js/navbar.js?v=2"></script>
     <script src="js/notifications.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/wishlist.js"></script>

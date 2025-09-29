@@ -416,38 +416,13 @@ let slideIndex = 0;
         // Load products when page loads
         document.addEventListener('DOMContentLoaded', fetchProducts);
 
-        // Toggle wishlist dropdown
-        function toggleWishlist() {
-            console.log('Toggling wishlist dropdown');
-            const wishlistDropdown = document.getElementById('wishlistDropdown');
-            
-            // Check if user is logged in
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if (!userData || !userData.email) {
-                console.log('User not logged in; showing toast');
-                showToast('Please login to view your wishlist');
-                return;
-            }
-            
-            // Toggle the dropdown visibility
-            if (wishlistDropdown.classList.contains('show')) {
-                wishlistDropdown.classList.remove('show');
-                console.log('Hiding wishlist dropdown');
-            } else {
-                wishlistDropdown.classList.add('show');
-                console.log('Showing wishlist dropdown');
-                // Load wishlist items when showing the dropdown
-                loadWishlist();
-            }
-        }
-
         // Close wishlist when clicking outside
         document.addEventListener('click', function(event) {
             const wishlistDropdown = document.getElementById('wishlistDropdown');
-            const wishlistIcon = document.querySelector('.nav-icon[alt="wishlist"]');
+            const wishlistNavItem = wishlistDropdown ? wishlistDropdown.closest('.nav-item') : null;
             
-            // Check if click is outside the wishlist dropdown and icon
-            if (!wishlistDropdown.contains(event.target) && event.target !== wishlistIcon) {
+            // Check if click is outside the wishlist nav item
+            if (wishlistDropdown && wishlistNavItem && !wishlistNavItem.contains(event.target)) {
                 wishlistDropdown.classList.remove('show');
             }
         });
@@ -899,3 +874,35 @@ let slideIndex = 0;
             console.log('DOM fully loaded, calling loadProducts');
             loadProducts();
         });
+
+        // Toggle wishlist dropdown - Global function
+        function toggleWishlist() {
+            console.log('Toggling wishlist dropdown');
+            const wishlistDropdown = document.getElementById('wishlistDropdown');
+            
+            // Check if user is logged in
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData || !userData.email) {
+                console.log('User not logged in; showing toast');
+                showToast('Please login to view your wishlist');
+                return;
+            }
+            
+            // Toggle the dropdown visibility
+            if (wishlistDropdown.classList.contains('show')) {
+                wishlistDropdown.classList.remove('show');
+                console.log('Hiding wishlist dropdown');
+            } else {
+                wishlistDropdown.classList.add('show');
+                console.log('Showing wishlist dropdown');
+                // Load wishlist items when showing the dropdown
+                loadWishlist();
+            }
+        }
+
+        // Make functions globally accessible
+        window.toggleWishlist = toggleWishlist;
+        window.loadWishlist = loadWishlist;
+        window.showToast = showToast;
+        window.addToWishlist = addToWishlist;
+        window.logout = logout;

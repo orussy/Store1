@@ -11,9 +11,13 @@ $adminInfo = getAdminInfo();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Store</title>
+    <link rel="stylesheet" href="../style/style.css">
+    <link rel="stylesheet" href="../style/new-navbar.css">
     <link rel="stylesheet" href="../style/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 </head>
 <body>
+    <div id="navbar-root"></div>
     <div class="admin-header">
         <h1>🔐 Admin Dashboard</h1>
         <div class="admin-info">
@@ -85,5 +89,6 @@ $adminInfo = getAdminInfo();
             }
         }
     </script>
+    <script src="../js/navbar.js"></script>
 </body>
 </html>
