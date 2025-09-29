@@ -119,6 +119,7 @@
 			<p id="productDescription"></p>
 			<div class="product-actions">
 				<button id="addToCartBtn" class="add-to-cart"><i class="fa-solid fa-cart-shopping"></i> Add to Cart</button>
+				<button id="buyNowBtn" class="add-to-cart" style="background-color:#0d3b5e;"><i class="fa-solid fa-bolt"></i> Buy Now</button>
 				<button id="addToWishlistBtn" class="wishlist-btn" aria-label="Add to wishlist" title="Add to wishlist">
 					<i class="fa-solid fa-heart" aria-hidden="true"></i>
 				</button>
@@ -186,7 +187,14 @@
 			return urlParams.get(name);
 		}
 		async function loadProductDetails() {
-			const id = getQueryParam('id');
+			let id = sessionStorage.getItem('productDetailsId') || getQueryParam('id');
+			if (getQueryParam('id')) {
+				try { sessionStorage.setItem('productDetailsId', getQueryParam('id')); } catch(e) {}
+				if (window.history && window.history.replaceState) {
+					const cleanUrl = window.location.pathname + window.location.hash;
+					window.history.replaceState({}, document.title, cleanUrl);
+				}
+			}
 			if (!id) return;
 			try {
 				const res = await fetch('get_product_details.php?id=' + encodeURIComponent(id));
@@ -248,6 +256,10 @@
 					addToCartBtn.disabled = true;
 					addToCartBtn.classList.add('out-of-stock');
 					addToCartBtn.onclick = null; // Remove click handler
+					const buyNowBtn = document.getElementById('buyNowBtn');
+					buyNowBtn.textContent = 'Out of Stock';
+					buyNowBtn.disabled = true;
+					buyNowBtn.classList.add('out-of-stock');
 				} else {
 					// Bind actions for in-stock products
 					addToCartBtn.onclick = function() {
@@ -260,6 +272,16 @@
 							image: selectedVariant.cover || product.cover,
 							variant: `${selectedVariant.color || ''} ${selectedVariant.size || ''}`.trim()
 						});
+					};
+
+					// Buy Now redirects to checkout without URL params
+					const buyNowBtn = document.getElementById('buyNowBtn');
+					buyNowBtn.onclick = function() {
+						const selectedVariant = getSelectedVariant(product);
+						const payload = { id: product.id, qty: 1 };
+						if (selectedVariant && selectedVariant.sku_id) { payload.sku_id = selectedVariant.sku_id; }
+						sessionStorage.setItem('checkoutItem', JSON.stringify(payload));
+						window.location.href = 'checkout.html';
 					};
 				}
 				
@@ -407,12 +429,15 @@
 				const track = document.getElementById('relatedTrack');
 				track.innerHTML = related.map(p => `
 					<div class="product-card" style="min-width:260px; max-width:260px;">
-						<div class="image-container"><a href="product-details.html?id=${p.product_id || p.id}"><img src="${p.cover}" class="product-image" alt="${p.name}"></a></div>
-						<a href="product-details.html?id=${p.product_id || p.id}" class="product-name"><h3 class="product-name">${p.name}</h3></a>
+						<div class="image-container"><a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${p.product_id || p.id}'); } catch(e) {} })()"><img src="${p.cover}" class="product-image" alt="${p.name}"></a></div>
+						<a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${p.product_id || p.id}'); } catch(e) {} })()" class="product-name"><h3 class="product-name">${p.name}</h3></a>
 						<p class="product-price">${p.price || ''} ${p.Currency || ''}</p>
 						<div class="product-buttons">
 							<button onclick="addToWishlist(${p.product_id || p.id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist"><i class="fa-solid fa-heart" aria-hidden="true"></i></button>
 							<button onclick="addToCart({ id: '${p.product_id || p.id}', name: '${p.name}', price: ${parseFloat(p.price || 0)}, image: '${p.cover}' })" class="add-to-cart"><i class="fa-solid fa-cart-shopping"></i> Add to Cart</button>
+							<button onclick="(function(){ try { sessionStorage.setItem('checkoutItem', JSON.stringify({ id: ${p.product_id || p.id}, qty: 1 })); window.location.href='checkout.html'; } catch(e) { window.location.href='checkout.html'; } })()" class="add-to-cart" style="display:inline-flex; align-items:center; gap:6px; background-color:#0d3b5e;">
+								<i class="fa-solid fa-bolt"></i> Buy Now
+							</button>
 						</div>
 					</div>
 				`).join('');

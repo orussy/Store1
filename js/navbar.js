@@ -356,7 +356,7 @@ class Navbar {
             ${itemsHtml}
             <div class="cart-footer">
                 <div class="cart-total">Total: $${total.toFixed(2)}</div>
-                <a href="cart.php" class="checkout-btn">Checkout</a>
+                <a href="checkout.html" class="checkout-btn">Checkout</a>
                 </div>
         `;
     }

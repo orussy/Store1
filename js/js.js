@@ -177,13 +177,13 @@ let slideIndex = 0;
                 const imageUrl = normalizeImageUrl(product.cover);
                 card.innerHTML = `
                     <div class="image-container">
-                        <a href="product-details.html?id=${product.id}">
+                        <a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${product.id}'); } catch(e) {} })()">
                             <img src="${imageUrl}" onerror="this.onerror=null; this.src='img/product/ultrabook.jpg'" 
                                  alt="${product.name}" 
                                  class="product-image">
                         </a>
                     </div>
-                    <a href="product-details.html?id=${product.id}" class="product-name"><h3 class="product-name">${product.name}</h3></a>
+                    <a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${product.id}'); } catch(e) {} })()" class="product-name"><h3 class="product-name">${product.name}</h3></a>
                     ${priceDisplay}
                     <p class="product-description">${product.description}</p>
                     <p class="product-quantity">${quantityText}</p>
@@ -831,13 +831,13 @@ let slideIndex = 0;
                         productCard.className = 'product-card';
                         productCard.innerHTML = `
                             <div class="image-container">
-                                <a href="product-details.html?id=${product.id}">
+                                <a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${product.id}'); } catch(e) {} })()">
                                     <img src="${product.cover}" 
                                          alt="${product.name}" 
                                          class="product-image">
                                 </a>
                             </div>
-                            <a href="product-details.html?id=${product.id}" class="product-name"><h3 class="product-name">${product.name}</h3></a>
+                            <a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${product.id}'); } catch(e) {} })()" class="product-name"><h3 class="product-name">${product.name}</h3></a>
                             ${priceDisplay}
                             <div class="product-buttons">
                                 <button onclick="addToWishlist(${product.id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist">

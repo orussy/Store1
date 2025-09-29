@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Checkout</title>
+	<link rel="stylesheet" href="style/style.css">
+	<link rel="stylesheet" href="style/new-navbar.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+	<style>
+		.checkout-wrapper { max-width: 1000px; margin: 110px auto 40px; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; }
+		.checkout-head { padding:16px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:10px; color:#0d3b5e; }
+		.checkout-body { display:grid; grid-template-columns: 1.3fr 0.7fr; gap:20px; padding:20px; }
+		.checkout-section { background:#fafafa; border:1px solid #eee; border-radius:6px; padding:16px; }
+		.summary-item { display:flex; gap:12px; }
+		.summary-item img { width:100px; height:100px; object-fit:contain; background:#f5f5f5; border-radius:6px; }
+		.summary-info h3 { margin:0 0 6px; color:#0d3b5e; }
+		.price { color:#e44d26; font-weight:bold; }
+		.option-row { display:flex; gap:10px; align-items:center; margin:8px 0; }
+		.actions { display:flex; gap:10px; margin-top:14px; }
+		.actions .add-to-cart { background-color:#0d3b5e; }
+		.note { font-size:12px; color:#666; margin-top:6px; }
+		@media (max-width: 900px) { .checkout-body { grid-template-columns: 1fr; } }
+	</style>
+</head>
+<body>
+	<div id="navbar-root"></div>
+	<div class="checkout-wrapper">
+		<div class="checkout-head">
+			<i class="fa-solid fa-bolt"></i>
+			<h2 style="margin:0;">Quick Checkout</h2>
+		</div>
+		<div class="checkout-body">
+			<div class="checkout-section">
+				<h3 style="margin-top:0; color:#0d3b5e;">Order Summary</h3>
+				<div id="cartList"></div>
+			</div>
+			<div class="checkout-section">
+				<h3 style="margin-top:0; color:#0d3b5e;">Delivery Location</h3>
+				<div id="addressList" class="option-row" style="flex-direction:column; align-items:stretch;"></div>
+				<button id="addAddressToggle" class="add-to-cart" style="margin-top:8px; background:#0d3b5e;">
+					<i class="fa-solid fa-plus"></i> Add New Address
+				</button>
+				<div id="newAddressForm" style="display:none; margin-top:10px;">
+					<input id="addrTitle" placeholder="Title (e.g., Home)" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:6px;" />
+					<input id="addr1" placeholder="Address line 1" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:6px;" />
+					<input id="addr2" placeholder="Address line 2 (optional)" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:6px;" />
+					<div class="option-row">
+						<input id="addrCity" placeholder="City" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+						<input id="addrPostal" placeholder="Postal code" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+					</div>
+					<div class="option-row" style="margin-top:6px;">
+						<input id="addrCountry" placeholder="Country" value="Egypt" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+					</div>
+					<button id="saveAddressBtn" class="add-to-cart" style="margin-top:8px;">
+						<i class="fa-solid fa-floppy-disk"></i> Save Address
+					</button>
+				</div>
+			</div>
+			<div class="checkout-section">
+				<h3 style="margin-top:0; color:#0d3b5e;">Payment</h3>
+				<label class="option-row"><input type="radio" name="payment" value="cash" checked> Cash on Delivery</label>
+				<label class="option-row"><input type="radio" name="payment" value="visa"> Visa / Card</label>
+				<div class="note">Tax will be applied according to tax rules.</div>
+				<div id="totals" style="margin-top:10px;">
+					<div>Subtotal: <strong id="subtotal">0</strong></div>
+					<div>Tax (<span id="taxRate">0</span>%): <strong id="taxAmount">0</strong></div>
+					<div style="margin-top:6px;">Grand Total: <strong id="grandTotal">0</strong></div>
+				</div>
+				<div class="actions">
+					<button id="completeOrderBtn" class="add-to-cart"><i class="fa-solid fa-check"></i> Complete Order</button>
+					<a href="cart.php" class="add-to-cart" style="background:#999; text-decoration:none; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-xmark"></i> Back to Cart</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="js/js.js"></script>
+	<script src="js/cart.js"></script>
+	<script src="js/navbar.js"></script>
+	<script>
+		async function fetchCart() {
+			const resp = await fetch('cart_api.php', { credentials: 'include' });
+			return await resp.json();
+		}
+
+		async function fetchTaxRate() {
+			try {
+				const resp = await fetch('get_tax_rate.php', { credentials: 'include' });
+				const data = await resp.json();
+				if (data && data.status === 'success') return data.tax_rate;
+			} catch(e) { console.warn('Tax fetch failed', e); }
+			return 0;
+		}
+
+		function renderCart(items) {
+			const cartList = document.getElementById('cartList');
+			if (!items || items.length === 0) { cartList.innerHTML = '<div class="empty-cart">Your cart is empty</div>'; return { subtotal: 0, currency: 'EGP' }; }
+			const currency = items[0]?.Currency || items[0]?.currency_code || items[0]?.currency || 'EGP';
+			cartList.innerHTML = items.map(item => {
+				const unit = parseFloat(item.has_discount ? item.final_price : item.price);
+				const lineTotal = (unit * item.quantity).toFixed(2);
+				return `
+					<div class="summary-item" style="margin-bottom:10px;">
+						<img src="${item.cover}" alt="${item.name}">
+						<div class="summary-info">
+							<h3>${item.name}</h3>
+							<div class="option-row">
+								<span>Qty: ${item.quantity}</span>
+							</div>
+							<div>Unit: <span class="price">${unit} ${currency}</span></div>
+							<div style="font-weight:bold; color:#0d3b5e;">Line Total: ${lineTotal} ${currency}</div>
+						</div>
+					</div>
+				`;
+			}).join('');
+			const subtotal = items.reduce((acc, it) => acc + parseFloat(it.has_discount ? it.final_price : it.price) * it.quantity, 0);
+			return { subtotal, currency };
+		}
+
+		async function loadCheckout() {
+			const data = await fetchCart();
+			if (data.status !== 'success') { window.location.href = 'cart.php'; return; }
+			const { subtotal, currency } = renderCart(data.items || []);
+			const taxRate = await fetchTaxRate();
+			document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ' + currency;
+			document.getElementById('taxRate').textContent = Number(taxRate).toFixed(2);
+			const taxAmount = subtotal * (Number(taxRate) / 100);
+			document.getElementById('taxAmount').textContent = taxAmount.toFixed(2) + ' ' + currency;
+			document.getElementById('grandTotal').textContent = (subtotal + taxAmount).toFixed(2) + ' ' + currency;
+
+			await loadAddresses();
+
+			const completeBtn = document.getElementById('completeOrderBtn');
+			completeBtn.onclick = async () => {
+				const payment = document.querySelector('input[name="payment"]:checked')?.value || 'cash';
+				const selectedAddr = document.querySelector('input[name="address_id"]:checked');
+				if (!selectedAddr) { showToast('Please select a delivery address'); return; }
+				try {
+					const resp = await fetch('create_order.php', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						credentials: 'include',
+						body: JSON.stringify({ payment_method: payment, address_id: Number(selectedAddr.value) })
+					});
+					const resData = await resp.json();
+					if (resData.status === 'success') {
+						showToast('Order placed successfully');
+						window.location.href = 'dashboard.html';
+					} else {
+						showToast(resData.message || 'Failed to create order');
+					}
+				} catch(e) { console.error(e); showToast('Failed to create order'); }
+			};
+		}
+
+		async function loadAddresses() {
+			const list = document.getElementById('addressList');
+			list.innerHTML = '<div class="loading">Loading addresses...</div>';
+			try {
+				const resp = await fetch('get_user_addresses.php', { credentials: 'include' });
+				const data = await resp.json();
+				if (data.status === 'success' && Array.isArray(data.addresses) && data.addresses.length) {
+					list.innerHTML = data.addresses.map(a => `
+						<label class="option-row" style="justify-content:space-between;">
+							<span style="display:flex; gap:8px; align-items:center;">
+								<input type="radio" name="address_id" value="${a.id}">
+								<span><strong>${a.title || 'Address'}</strong><br>${a.address1 || ''} ${a.address2 || ''}, ${a.city || ''}, ${a.country || ''} ${a.postal_code || ''}</span>
+							</span>
+						</label>
+					`).join('');
+				} else {
+					list.innerHTML = '<div class="empty-cart">No saved addresses</div>';
+				}
+			} catch (e) {
+				console.error(e);
+				list.innerHTML = '<div class="error-state">Failed to load addresses</div>';
+			}
+
+			const toggle = document.getElementById('addAddressToggle');
+			const form = document.getElementById('newAddressForm');
+			if (toggle && form) {
+				toggle.onclick = () => { form.style.display = form.style.display === 'none' ? 'block' : 'none'; };
+			}
+
+			const saveBtn = document.getElementById('saveAddressBtn');
+			if (saveBtn) {
+				saveBtn.onclick = async () => {
+					const payload = {
+						title: document.getElementById('addrTitle').value.trim(),
+						address: document.getElementById('addr1').value.trim(),
+						address2: document.getElementById('addr2').value.trim(),
+						country: document.getElementById('addrCountry').value.trim() || 'Egypt',
+						city: document.getElementById('addrCity').value.trim(),
+						postal_code: document.getElementById('addrPostal').value.trim()
+					};
+					if (!payload.address || !payload.city) { showToast('Please fill address and city'); return; }
+					try {
+						const resp = await fetch('save_address.php', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							credentials: 'include',
+							body: JSON.stringify(payload)
+						});
+						const data = await resp.json();
+						if (data.status === 'success') { showToast('Address saved'); loadAddresses(); form.style.display = 'none'; }
+						else { showToast(data.message || 'Failed to save address'); }
+					} catch(e) { console.error(e); showToast('Failed to save address'); }
+				};
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', loadCheckout);
+	</script>
+</body>
+</html>
+
+

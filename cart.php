@@ -46,7 +46,12 @@ if (!isset($_SESSION['user_id'])) {
     <div id="navbar-root"></div>
     <div style="height: 80px;"></div> <!-- Spacer for fixed navbar -->
     <div class="container main-content">
-        <h2 style="margin-bottom: 30px; color: #0d3b5e;">Your Cart</h2>
+        <div class="cart-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 20px;">
+            <h2 style="margin:0; color: #0d3b5e;">Your Cart</h2>
+            <a href="checkout.html" class="add-to-cart" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-credit-card"></i> Checkout
+            </a>
+        </div>
         <div id="cartItems"></div>
     </div>
     <div class="loading-overlay" id="loadingOverlay">
