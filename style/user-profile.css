@@ -108,7 +108,7 @@ body {
     gap: 0;
 }
 
-.nav-item {
+.sidebar-nav .nav-item {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -120,28 +120,28 @@ body {
     margin-bottom: 5px;
 }
 
-.nav-item:last-child {
+.sidebar-nav .nav-item:last-child {
     border-bottom: none;
 }
 
-.nav-item:hover {
+.sidebar-nav .nav-item:hover {
     background-color: #f3f4f6;
     color: #1e3a8a;
 }
 
-.nav-item.active {
+.sidebar-nav .nav-item.active {
     background-color: #1e3a8a;
     color: white;
     border-radius: 8px;
 }
 
-.nav-item i {
+.sidebar-nav .nav-item i {
     font-size: 18px;
     width: 20px;
     text-align: center;
 }
 
-.nav-item span {
+.sidebar-nav .nav-item span {
     font-size: 14px;
     font-weight: 500;
 }

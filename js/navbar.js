@@ -113,7 +113,6 @@ class Navbar {
                         <button class="nav-btn" id="userBtn" title="User Account">
                             <i class="fas fa-user"></i>
                             <span class="nav-label" id="userLabel">Account</span>
-                            <span class="email-inline" id="userEmailInline" style="display:none;"></span>
                         </button>
                         <div class="dropdown" id="userDropdown">
                             <div class="dropdown-content">
@@ -453,7 +452,6 @@ class Navbar {
         const userLabel = document.getElementById('userLabel');
         const username = document.getElementById('username');
         const userEmail = document.getElementById('userEmail');
-        const userEmailInline = document.getElementById('userEmailInline');
 
         if (this.isLoggedIn && this.userData) {
             if (loginSection) loginSection.style.display = 'none';
@@ -461,12 +459,10 @@ class Navbar {
             if (userLabel) userLabel.textContent = 'Account';
             if (username) username.textContent = this.userData.email.split('@')[0];
             if (userEmail) userEmail.textContent = this.userData.email;
-            if (userEmailInline) { userEmailInline.textContent = this.userData.email; userEmailInline.style.display = 'inline'; }
         } else {
             if (loginSection) loginSection.style.display = 'block';
             if (userSection) userSection.style.display = 'none';
             if (userLabel) userLabel.textContent = 'Login';
-            if (userEmailInline) userEmailInline.style.display = 'none';
         }
     }
 
