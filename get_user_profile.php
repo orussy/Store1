@@ -15,23 +15,17 @@ header("Content-Type: application/json");
 
 require_once 'config/db.php';
 
-// Check if user is logged in via session or POST/GET
-$userId = null;
-if (isset($_SESSION['user_id'])) {
-    $userId = $_SESSION['user_id'];
-} elseif (isset($_POST['user_id']) && !empty($_POST['user_id'])) {
-    $userId = intval($_POST['user_id']);
-} elseif (isset($_GET['user_id']) && !empty($_GET['user_id'])) {
-    $userId = intval($_GET['user_id']);
-}
-
-if (!$userId) {
+// Only allow access when authenticated via session
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
     echo json_encode([
         "status" => "error",
-        "message" => "User not authenticated"
+        "message" => "Not authenticated"
     ]);
     exit();
 }
+
+$userId = intval($_SESSION['user_id']);
 
 try {
     // Get user data from users table

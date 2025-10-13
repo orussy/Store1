@@ -3,31 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Login</title>
     <link rel="stylesheet" href="style1.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
-    <!-- Add Google client library -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title></title>
 </head>
 <body>
 
-    <script>
-    (async function redirectIfLoggedIn() {
-        try {
-            const resp = await fetch('get_user_data.php', { credentials: 'include' });
-            if (!resp.ok) return; // not logged in
-            const data = await resp.json();
-            if (data && data.user_id) {
-                const roleId = Number(data.role_id || 7);
-                const target = [1,2,3,4,5,6].includes(roleId) ? 'admin/admindashboard.php' : 'dashboard.html';
-                window.location.replace(target);
-            }
-        } catch (e) {
-            // ignore
-        }
-    })();
-    </script>
     <div class="login-container">
         <h2>Login</h2>
         <div id="error-message" class="error-message"></div>
@@ -69,11 +49,5 @@
             <p>Don't have an account?</p>
             <a href="regestration.html" class="signup-btn">Sign Up</a>
         </div>
-    </div>
-
-    
-
-    <script src="js/login.js?v=1.2"></script>
-    <script src="js/navbar.js"></script>
 </body>
 </html>

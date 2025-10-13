@@ -32,15 +32,15 @@ if (!$result) {
 }
 
 $products = array();
-$productMap = array(); // To group products by base SKU
+$productMap = array(); // Group products by product ID to combine all SKUs/colors
 
 while ($row = $result->fetch_assoc()) {
-    // Extract base SKU (remove size and color from SKU)
-    $baseSku = preg_replace('/-[A-Z]+$/', '', $row['sku']); // Remove last part after dash
+    // Use product ID as the grouping key to ensure all SKUs of the same product are merged
+    $groupKey = (string)$row['id'];
     
-    if (!isset($productMap[$baseSku])) {
+    if (!isset($productMap[$groupKey])) {
         // Initialize product data
-        $productMap[$baseSku] = array(
+        $productMap[$groupKey] = array(
             'id' => $row['id'],
             'name' => $row['name'],
             'description' => $row['description'],
@@ -48,7 +48,7 @@ while ($row = $result->fetch_assoc()) {
             'cover' => $row['sku_cover'], // Use sku_cover instead of cover
             'category_id' => $row['category_id'],
             'created_at' => $row['created_at'],
-            'base_sku' => $baseSku,
+            'base_sku' => $row['sku'], // keep for backward compatibility, but grouping is by id
             'variants' => array(),
             'discount_type' => $row['discount_type'],
             'discount_value' => $row['discount_value'],
@@ -90,12 +90,12 @@ while ($row = $result->fetch_assoc()) {
         $variant['original_price'] = number_format($originalPrice, 2);
     }
     
-    $productMap[$baseSku]['variants'][] = $variant;
+    $productMap[$groupKey]['variants'][] = $variant;
 }
 
 // Convert map to array and set default variant for each product
 $products = array();
-foreach ($productMap as $baseSku => $product) {
+foreach ($productMap as $groupKey => $product) {
     // Set the first variant as default for backward compatibility
     if (!empty($product['variants'])) {
         $defaultVariant = $product['variants'][0];

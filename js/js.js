@@ -157,7 +157,7 @@ let slideIndex = 0;
                         colors.forEach(color => {
                             variantButtons += `<button class="variant-btn color-btn" data-color="${color}" 
                                 style="background-color: ${getColorValue(color)}; border: 2px solid #ddd;" 
-                                title="${color}">${color}</button>`;
+                                title="${color}"></button>`;
                         });
                         variantButtons += '</div>';
                     }
@@ -267,6 +267,11 @@ let slideIndex = 0;
             // Set first variant as active by default
             if (colorButtons.length > 0) colorButtons[0].classList.add('active');
             if (sizeButtons.length > 0) sizeButtons[0].classList.add('active');
+
+            // Initialize add-to-cart and image with the default active selection
+            const defaultSelectedColor = card.querySelector('.color-btn.active')?.dataset.color;
+            const defaultSelectedSize = card.querySelector('.size-btn.active')?.dataset.size;
+            updateProductVariant(card, product, defaultSelectedColor, defaultSelectedSize);
         }
 
         // Update product variant display
@@ -505,7 +510,7 @@ let slideIndex = 0;
         }
 
         // Add wishlist functionality
-        function addToWishlist(productId) {
+        function addToWishlist(productId, productSkuId = null) {
             console.log('Adding to wishlist, checking user data...');
             const userDataStr = localStorage.getItem('userData');
             console.log('Raw userData from localStorage:', userDataStr);
@@ -544,15 +549,22 @@ let slideIndex = 0;
                 return;
             }
 
+            const payload = (function(){
+                const p = { product_id: numericProductId };
+                if (productSkuId !== null && !isNaN(parseInt(productSkuId))) {
+                    p.product_sku_id = parseInt(productSkuId);
+                }
+                return p;
+            })();
+            console.log('Wishlist payload:', payload);
+
             fetch('wishlist_api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
-                body: JSON.stringify({ 
-                    product_id: numericProductId
-                })
+                body: JSON.stringify(payload)
             })
             .then(response => {
                 if (!response.ok) {
@@ -827,6 +839,29 @@ let slideIndex = 0;
                             priceDisplay = `<p class="product-price">${product.price} ${product.Currency}</p>`;
                         }
 
+                        // Generate variant buttons (colors and sizes) for this rendering path
+                        let variantButtons = '';
+                        if (product.variants && product.variants.length > 1) {
+                            const colors = [...new Set(product.variants.map(v => v.color).filter(c => c))];
+                            const sizes = [...new Set(product.variants.map(v => v.size).filter(s => s))];
+                            variantButtons = '<div class="variant-buttons">';
+                            if (colors.length > 1) {
+                                variantButtons += '<div class="color-variants">';
+                                colors.forEach(color => {
+                                    variantButtons += `<button class="variant-btn color-btn" data-color="${color}" style="background-color: ${getColorValue(color)}; border: 2px solid #ddd;" title="${color}">${color}</button>`;
+                                });
+                                variantButtons += '</div>';
+                            }
+                            if (sizes.length > 1) {
+                                variantButtons += '<div class="size-variants">';
+                                sizes.forEach(size => {
+                                    variantButtons += `<button class="variant-btn size-btn" data-size="${size}" title="${size}">${size}</button>`;
+                                });
+                                variantButtons += '</div>';
+                            }
+                            variantButtons += '</div>';
+                        }
+
                         const productCard = document.createElement('div');
                         productCard.className = 'product-card';
                         productCard.innerHTML = `
@@ -839,6 +874,7 @@ let slideIndex = 0;
                             </div>
                             <a href="product-details.html" onclick="(function(){ try { sessionStorage.setItem('productDetailsId', '${product.id}'); } catch(e) {} })()" class="product-name"><h3 class="product-name">${product.name}</h3></a>
                             ${priceDisplay}
+                            ${variantButtons}
                             <div class="product-buttons">
                                 <button onclick="addToWishlist(${product.id})" class="wishlist-btn" title="Add to wishlist" aria-label="Add to wishlist">
                                     <i class="fa-solid fa-heart" aria-hidden="true"></i>
@@ -856,6 +892,9 @@ let slideIndex = 0;
                             </div>
                         `;
                         productsContainer.appendChild(productCard);
+                        if (product.variants && product.variants.length > 1) {
+                            addVariantListeners(productCard, product);
+                        }
                     });
                     console.log('Products loaded successfully');
                 })

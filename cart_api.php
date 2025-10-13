@@ -4,7 +4,18 @@
 error_reporting(0);
 ini_set('display_errors', 0);
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    $cookieParams = session_get_cookie_params();
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => $cookieParams['domain'] ?? '',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
 header('Content-Type: application/json');
 
 // Check if user is logged in
@@ -126,32 +137,62 @@ switch ($method) {
             exit();
         }
         
-        // Get default product_sku_id
-        $sku_sql = "SELECT id FROM product_skus WHERE product_id = ? LIMIT 1";
-        $sku_stmt = $conn->prepare($sku_sql);
-        if (!$sku_stmt) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => 'SKU prepare failed: ' . $conn->error]);
-            exit();
+        // Get product_sku_id from request or use default
+        $product_sku_id = $input['product_sku_id'] ?? null;
+        
+        if ($product_sku_id) {
+            // Verify the SKU belongs to the product
+            $sku_sql = "SELECT id FROM product_skus WHERE id = ? AND product_id = ?";
+            $sku_stmt = $conn->prepare($sku_sql);
+            if (!$sku_stmt) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'SKU prepare failed: ' . $conn->error]);
+                exit();
+            }
+            
+            $sku_stmt->bind_param("ii", $product_sku_id, $product_id);
+            if (!$sku_stmt->execute()) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'SKU execute failed: ' . $sku_stmt->error]);
+                exit();
+            }
+            
+            $sku_result = $sku_stmt->get_result();
+            $sku_row = $sku_result->fetch_assoc();
+            
+            if (!$sku_row) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Invalid SKU for this product']);
+                exit();
+            }
+        } else {
+            // Get default product_sku_id if no specific SKU provided
+            $sku_sql = "SELECT id FROM product_skus WHERE product_id = ? LIMIT 1";
+            $sku_stmt = $conn->prepare($sku_sql);
+            if (!$sku_stmt) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'SKU prepare failed: ' . $conn->error]);
+                exit();
+            }
+            
+            $sku_stmt->bind_param("i", $product_id);
+            if (!$sku_stmt->execute()) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'SKU execute failed: ' . $sku_stmt->error]);
+                exit();
+            }
+            
+            $sku_result = $sku_stmt->get_result();
+            $sku_row = $sku_result->fetch_assoc();
+            
+            if (!$sku_row) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Product SKU not found']);
+                exit();
+            }
+            
+            $product_sku_id = $sku_row['id'];
         }
-        
-        $sku_stmt->bind_param("i", $product_id);
-        if (!$sku_stmt->execute()) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => 'SKU execute failed: ' . $sku_stmt->error]);
-            exit();
-        }
-        
-        $sku_result = $sku_stmt->get_result();
-        $sku_row = $sku_result->fetch_assoc();
-        
-        if (!$sku_row) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'Product SKU not found']);
-            exit();
-        }
-        
-        $product_sku_id = $sku_row['id'];
         
         // Get or create cart for user
         $cart_sql = "SELECT id FROM cart WHERE user_id = ?";

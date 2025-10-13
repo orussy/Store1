@@ -16,22 +16,8 @@ window.addEventListener('load', async () => {
             };
             try { localStorage.setItem('userData', JSON.stringify(effectiveUser)); } catch (_) {}
         } else {
-            // Fallback to localStorage + server validation via profile endpoint
-            const localStr = localStorage.getItem('userData');
-            let localUser = null; try { localUser = JSON.parse(localStr || ''); } catch (_) {}
-            if (localUser && localUser.id) {
-                const profResp = await fetch('get_user_profile.php?user_id=' + encodeURIComponent(localUser.id), { credentials: 'include' });
-                const profData = await profResp.json();
-                if (profData && profData.status === 'success' && profData.userData && profData.userData.email) {
-                    effectiveUser = {
-                        id: profData.userData.id,
-                        email: profData.userData.email,
-                        role_id: profData.userData.role_id || localUser.role_id || 7,
-                        status: profData.userData.status || 'active'
-                    };
-                    try { localStorage.setItem('userData', JSON.stringify(effectiveUser)); } catch (_) {}
-                }
-            }
+            // Not authenticated: clear any stale client state
+            try { localStorage.removeItem('userData'); } catch (_) {}
         }
 
         const loginSection = document.getElementById('loginSection');

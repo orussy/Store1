@@ -21,6 +21,30 @@
 		.actions .add-to-cart { background-color:#0d3b5e; }
 		.note { font-size:12px; color:#666; margin-top:6px; }
 		@media (max-width: 900px) { .checkout-body { grid-template-columns: 1fr; } }
+
+		/* Promo reveal animation */
+		.promo-toggle {
+			background:#0d3b5e;
+			color:#fff;
+			border:none;
+			padding:8px 12px;
+			border-radius:6px;
+			cursor:pointer;
+			transition: transform .2s ease, opacity .2s ease;
+		}
+		.promo-toggle:active { transform: scale(0.98); }
+		.promo-row {
+			overflow:hidden;
+			max-height:0;
+			opacity:0;
+			transform: translateY(-6px);
+			transition:max-height .3s ease, opacity .25s ease, transform .3s ease;
+		}
+		.promo-open .promo-row {
+			max-height:60px;
+			opacity:1;
+			transform: translateY(0);
+		}
 	</style>
 </head>
 <body>
@@ -62,8 +86,20 @@
 				<label class="option-row"><input type="radio" name="payment" value="cash" checked> Cash on Delivery</label>
 				<label class="option-row"><input type="radio" name="payment" value="visa"> Visa / Card</label>
 				<div class="note">Tax will be applied according to tax rules.</div>
+				<div class="option-row" style="margin-top:10px;">
+					<button id="promoToggle" class="promo-toggle"><i class="fa-solid fa-ticket"></i> I have a promo code</button>
+				</div>
+				<div class="promo-row" id="promoRow">
+					<div class="option-row" style="align-items:stretch;">
+						<input id="promoInput" placeholder="Enter promo code" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+						<button id="applyPromoBtn" class="add-to-cart" style="white-space:nowrap;">
+							<i class="fa-solid fa-check"></i> Apply
+						</button>
+					</div>
+					<div id="promoFeedback" class="note" style="display:none;"></div>
+				</div>
 				<div id="totals" style="margin-top:10px;">
-					<div>Subtotal: <strong id="subtotal">0</strong></div>
+					<div>Subtotal: <strong id="subtotal">0</strong> <span id="subtotalOriginal" style="display:none; text-decoration:line-through; color:#999; margin-left:6px;"></span></div>
 					<div>Tax (<span id="taxRate">0</span>%): <strong id="taxAmount">0</strong></div>
 					<div style="margin-top:6px;">Grand Total: <strong id="grandTotal">0</strong></div>
 				</div>
@@ -93,6 +129,24 @@
 			return 0;
 		}
 
+		async function addSingleItemFromSession() {
+			let payload = null;
+			try { payload = JSON.parse(sessionStorage.getItem('checkoutItem') || 'null'); } catch (e) { payload = null; }
+			if (!payload || !payload.id) return;
+			try {
+				const body = { product_id: Number(payload.id), quantity: Math.max(1, parseInt(payload.qty || 1, 10)) };
+				if (payload.sku_id) body.product_sku_id = Number(payload.sku_id);
+				const resp = await fetch('cart_api.php', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'include',
+					body: JSON.stringify(body)
+				});
+				await resp.json();
+			} catch (e) { console.warn('Failed to add buy-now item to cart', e); }
+			finally { try { sessionStorage.removeItem('checkoutItem'); } catch(e) {} }
+		}
+
 		function renderCart(items) {
 			const cartList = document.getElementById('cartList');
 			if (!items || items.length === 0) { cartList.innerHTML = '<div class="empty-cart">Your cart is empty</div>'; return { subtotal: 0, currency: 'EGP' }; }
@@ -119,9 +173,10 @@
 		}
 
 		async function loadCheckout() {
+			await addSingleItemFromSession();
 			const data = await fetchCart();
 			if (data.status !== 'success') { window.location.href = 'cart.php'; return; }
-			const { subtotal, currency } = renderCart(data.items || []);
+			let { subtotal, currency } = renderCart(data.items || []);
 			const taxRate = await fetchTaxRate();
 			document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ' + currency;
 			document.getElementById('taxRate').textContent = Number(taxRate).toFixed(2);
@@ -141,7 +196,7 @@
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						credentials: 'include',
-						body: JSON.stringify({ payment_method: payment, address_id: Number(selectedAddr.value) })
+						body: JSON.stringify({ payment_method: payment, address_id: Number(selectedAddr.value), promocode: (window.__appliedPromoCode || '') })
 					});
 					const resData = await resp.json();
 					if (resData.status === 'success') {
@@ -151,6 +206,47 @@
 						showToast(resData.message || 'Failed to create order');
 					}
 				} catch(e) { console.error(e); showToast('Failed to create order'); }
+			};
+
+			// Promo toggle + apply logic
+			const promoToggle = document.getElementById('promoToggle');
+			const promoRow = document.getElementById('promoRow');
+			if (promoToggle && promoRow) {
+				promoToggle.onclick = () => {
+					if (promoRow.parentElement.classList.contains('promo-open')) {
+						promoRow.parentElement.classList.remove('promo-open');
+					} else {
+						promoRow.parentElement.classList.add('promo-open');
+						setTimeout(() => document.getElementById('promoInput')?.focus(), 200);
+					}
+				};
+			}
+			const applyBtn = document.getElementById('applyPromoBtn');
+			const promoInput = document.getElementById('promoInput');
+			const fee = document.getElementById('promoFeedback');
+			applyBtn.onclick = async () => {
+				const code = (promoInput.value || '').trim();
+				if (!code) { fee.textContent = 'Enter a promo code'; fee.style.display = 'block'; return; }
+				try {
+					const resp = await fetch('validate_promocode.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ code }) });
+					const data = await resp.json();
+					if (data.status === 'success') {
+						window.__appliedPromoCode = data.promocode.code;
+						const originalEl = document.getElementById('subtotalOriginal');
+						originalEl.style.display = 'inline';
+						originalEl.textContent = (subtotal.toFixed(2) + ' ' + currency);
+						subtotal = data.discounted_subtotal;
+						document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ' + currency;
+						const newTax = subtotal * (Number(document.getElementById('taxRate').textContent) / 100);
+						document.getElementById('taxAmount').textContent = newTax.toFixed(2) + ' ' + currency;
+						document.getElementById('grandTotal').textContent = (subtotal + newTax).toFixed(2) + ' ' + currency;
+						fee.textContent = `Applied ${data.promocode.code} (-${data.discount_amount.toFixed ? data.discount_amount.toFixed(2) : data.discount_amount} ${currency})`;
+						fee.style.display = 'block';
+					} else {
+						fee.textContent = data.message || 'Promo not valid';
+						fee.style.display = 'block';
+					}
+				} catch (e) { fee.textContent = 'Promo check failed'; fee.style.display = 'block'; }
 			};
 		}
 

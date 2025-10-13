@@ -57,7 +57,7 @@ function fetchWishlist() {
                             ${priceDisplay}
                             <div class="wishlist-actions">
                                 <button onclick="removeFromWishlist(${item.id})">Remove</button>
-                                <button onclick='addToCart({id: ${item.product_id}, name: "${item.name.replace(/'/g, "\\'")}", price: ${item.has_discount ? item.final_price : item.price}, image: "${item.cover}"})' class="add-to-cart">Add to Cart</button>
+                                <button onclick='addToCart({id: ${item.product_id}, product_sku_id: ${item.product_sku_id ?? "null"}, name: "${item.name.replace(/'/g, "\\'")}", price: ${item.has_discount ? item.final_price : item.price}, image: "${item.cover}"})' class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
                     `;

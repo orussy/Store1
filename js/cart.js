@@ -37,10 +37,14 @@ function addToCart(product) {
         quantity: 1
     };
     
-    // Add SKU ID if it's a variant
+    // Add SKU ID if it's a variant (check both sku_id and product_sku_id for compatibility)
     if (product.sku_id) {
         requestBody.product_sku_id = product.sku_id;
+    } else if (product.product_sku_id) {
+        requestBody.product_sku_id = product.product_sku_id;
     }
+    
+    console.log('Adding to cart:', requestBody);
 
     fetch('cart_api.php', {
         method: 'POST',

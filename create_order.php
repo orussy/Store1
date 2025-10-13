@@ -23,6 +23,7 @@ $user_id = intval($_SESSION['user_id']);
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
 $payment_method = isset($input['payment_method']) ? trim($input['payment_method']) : 'cash';
 $address_id = isset($input['address_id']) ? intval($input['address_id']) : 0;
+$promo_code = isset($input['promocode']) ? trim($input['promocode']) : '';
 
 // Fetch user's cart and items
 $cart_sql = "SELECT id, total FROM cart WHERE user_id = ? LIMIT 1";
@@ -66,10 +67,52 @@ while ($r = $items_res->fetch_assoc()) {
 }
 if (empty($items)) { echo json_encode(['status'=>'error','message'=>'Cart has no items']); exit(); }
 
-// Tax rate
+// Tax rate (compute amount AFTER discount below)
 $tax_rate = 0.0;
 $tax_q = $conn->query("SELECT tax_rate FROM tax_rules WHERE country='EG' AND is_active=1 ORDER BY category_id IS NULL DESC, id DESC LIMIT 1");
 if ($tax_q && $tax_q->num_rows > 0) { $tax_rate = floatval($tax_q->fetch_assoc()['tax_rate']); }
+$tax_amount = 0.0;
+$discount_amount = 0.0;
+if ($promo_code !== '') {
+    $promo_stmt = $conn->prepare("SELECT id, discount_type, discount_value, min_cart_total, max_uses, max_uses_per_user, start_date, end_date, is_active FROM promocodes WHERE code=? LIMIT 1");
+	$promo_stmt->bind_param('s', $promo_code);
+	if ($promo_stmt->execute()) {
+		$pr = $promo_stmt->get_result();
+		if ($pr->num_rows > 0) {
+			$p = $pr->fetch_assoc();
+			$valid = intval($p['is_active']) === 1 && (empty($p['start_date']) || $p['start_date'] <= $today) && (empty($p['end_date']) || $p['end_date'] >= $today) && ($subtotal >= floatval($p['min_cart_total'] ?? 0));
+			if ($valid) {
+                // Check usage limits
+                $promo_id = intval($p['id']);
+                $maxUses = isset($p['max_uses']) ? intval($p['max_uses']) : null;
+                $maxPerUser = isset($p['max_uses_per_user']) ? intval($p['max_uses_per_user']) : null;
+
+                // Global usage
+                $total_used = 0;
+                $tuStmt = $conn->prepare("SELECT COALESCE(SUM(used_count),0) as total_used FROM user_promocode_usage WHERE promocode_id = ?");
+                $tuStmt->bind_param('i', $promo_id);
+                if ($tuStmt->execute()) { $total_used = intval(($tuStmt->get_result()->fetch_assoc())['total_used']); }
+                if (!is_null($maxUses) && $maxUses > 0 && $total_used >= $maxUses) { $valid = false; }
+
+                // Per-user usage
+                $user_used = 0;
+                $uuStmt = $conn->prepare("SELECT used_count FROM user_promocode_usage WHERE user_id = ? AND promocode_id = ? LIMIT 1");
+                $uuStmt->bind_param('ii', $user_id, $promo_id);
+                if ($uuStmt->execute()) { $r = $uuStmt->get_result(); if ($r->num_rows > 0) { $user_used = intval($r->fetch_assoc()['used_count']); } }
+                if (!is_null($maxPerUser) && $maxPerUser > 0 && $user_used >= $maxPerUser) { $valid = false; }
+
+                if ($valid) {
+				if ($p['discount_type'] === 'percentage') { $discount_amount = $subtotal * (floatval($p['discount_value'])/100.0); }
+				else { $discount_amount = floatval($p['discount_value']); }
+				$subtotal = max(0, $subtotal - $discount_amount);
+				$applied_promocode_id = intval($p['id']);
+                }
+			}
+		}
+	}
+}
+
+// Compute tax after applying any promo discounts
 $tax_amount = $subtotal * ($tax_rate/100.0);
 $grand_total = $subtotal + $tax_amount;
 
@@ -86,10 +129,10 @@ try {
 	} else {
 		throw new Exception('Delivery address is required');
 	}
-	// Create order_details (with address)
-	$ins_order_sql = "INSERT INTO order_details (user_id, cart_id, total, status, tax_amount, tax_rate, add_id) VALUES (?, ?, ?, 'Pending', ?, ?, ?)";
-	$ins_order = $conn->prepare($ins_order_sql);
-	$ins_order->bind_param('iiddii', $user_id, $cart_id, $grand_total, $tax_amount, $tax_rate, $address_id);
+    // Create order_details (with address) — store total without tax; tax in tax_amount
+    $ins_order_sql = "INSERT INTO order_details (user_id, cart_id, total, status, tax_amount, tax_rate, add_id) VALUES (?, ?, ?, 'Pending', ?, ?, ?)";
+    $ins_order = $conn->prepare($ins_order_sql);
+    $ins_order->bind_param('iiddii', $user_id, $cart_id, $subtotal, $tax_amount, $tax_rate, $address_id);
 	if (!$ins_order->execute()) { throw new Exception('Failed to create order'); }
 	$order_id = $conn->insert_id;
 
@@ -101,11 +144,36 @@ try {
 		if (!$ins_item->execute()) { throw new Exception('Failed to insert order item'); }
 	}
 
+	// Record applied promocode to cart_promocodes
+    if (!empty($applied_promocode_id)) {
+        // Record cart->promocode link
+        $ins_cp = $conn->prepare("INSERT INTO cart_promocodes (cart_id, promocode_id) VALUES (?, ?)");
+        $ins_cp->bind_param('ii', $cart_id, $applied_promocode_id);
+        if (!$ins_cp->execute()) { throw new Exception('Failed to record promo code'); }
+
+        // Upsert user usage count
+        $sel_uu = $conn->prepare("SELECT id, used_count FROM user_promocode_usage WHERE user_id = ? AND promocode_id = ? LIMIT 1");
+        $sel_uu->bind_param('ii', $user_id, $applied_promocode_id);
+        if (!$sel_uu->execute()) { throw new Exception('Failed to read promo usage'); }
+        $uuRes = $sel_uu->get_result();
+        if ($uuRes->num_rows > 0) {
+            $row = $uuRes->fetch_assoc();
+            $newCount = intval($row['used_count']) + 1;
+            $upd_uu = $conn->prepare("UPDATE user_promocode_usage SET used_count = ? WHERE id = ?");
+            $upd_uu->bind_param('ii', $newCount, $row['id']);
+            if (!$upd_uu->execute()) { throw new Exception('Failed to update promo usage'); }
+        } else {
+            $ins_uu = $conn->prepare("INSERT INTO user_promocode_usage (user_id, promocode_id, used_count) VALUES (?, ?, 1)");
+            $ins_uu->bind_param('ii', $user_id, $applied_promocode_id);
+            if (!$ins_uu->execute()) { throw new Exception('Failed to insert promo usage'); }
+        }
+    }
+
 	// Insert payment details
 	$provider = ($payment_method === 'visa' || $payment_method === 'card' || $payment_method === 'credit') ? 'credit' : 'cash';
 	$pay_sql = "INSERT INTO payment_details (order_id, amount, provider, status) VALUES (?, ?, ?, ?)";
 	$pay = $conn->prepare($pay_sql);
-	$status = 'completed';
+	$status = 'pending';
 	$pay->bind_param('idss', $order_id, $grand_total, $provider, $status);
 	if (!$pay->execute()) { throw new Exception('Failed to insert payment'); }
 
